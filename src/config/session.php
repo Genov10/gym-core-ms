@@ -3,6 +3,15 @@
 use Illuminate\Support\Str;
 
 return [
+    'lottery' => (static function (): array {
+        $raw = (string) env('SESSION_LOTTERY', '2,100');
+        $parts = array_values(array_filter(array_map('trim', explode(',', $raw)), fn ($v) => $v !== ''));
+
+        $a = (int) ($parts[0] ?? 2);
+        $b = (int) ($parts[1] ?? 100);
+
+        return [$a, $b];
+    })(),
 
     /*
     |--------------------------------------------------------------------------
@@ -113,8 +122,7 @@ return [
     | happen on a given request. By default, the odds are 2 out of 100.
     |
     */
-
-    'lottery' => [2, 100],
+    // Configured at top of file via SESSION_LOTTERY env (e.g. "2,100" or "100,100").
 
     /*
     |--------------------------------------------------------------------------
