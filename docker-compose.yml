@@ -1,0 +1,85 @@
+name: gym-core-ms
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gym-core-ms-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gym_core}
+      POSTGRES_USER: ${POSTGRES_USER:-gym}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gym_pass}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: gym-core-ms-pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@gym.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_REPLACE_SERVERS_ON_STARTUP: "True"
+    user: root
+    entrypoint: /bin/sh -c "chmod 0600 /pgpass || true; /entrypoint.sh"
+    ports:
+      - "${PGADMIN_PORT:-5051}:80"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ./docker/pgadmin/pgpass:/pgpass
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gym-core-ms-php
+    working_dir: /var/www/html
+    env_file:
+      - ./.env.docker
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_DEBUG: ${APP_DEBUG:-true}
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: gym-core-ms-nginx
+    depends_on:
+      - app
+    ports:
+      - "${APP_HTTP_PORT:-8081}:80"
+    volumes:
+      - ./src:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+  node:
+    image: node:20-alpine
+    container_name: gym-core-ms-node
+    working_dir: /var/www/html
+    command: sh -lc "npm install && npm run dev -- --host 0.0.0.0 --port ${VITE_PORT:-5173}"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    ports:
+      - "${VITE_HOST_PORT:-5174}:${VITE_PORT:-5173}"
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  pgadmin:
+
