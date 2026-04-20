@@ -15,7 +15,7 @@ return new class extends Migration
             $table->boolean('is_staff')->nullable();
             $table->integer('locker_amount')->nullable();
             $table->timestamp('create_time')->nullable();
-            $table->boolean('is_active')->nullable();
+            $table->boolean('is_active')->default(true);
         });
     }
 

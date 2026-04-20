@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\RoomsController;
 
 Route::get('/login', function () {
     return redirect('/admin/login');
@@ -21,6 +22,10 @@ Route::prefix('admin')->group(function () {
         Route::get('/', function () {
             return view('admin.dashboard');
         })->name('admin.dashboard');
+
+        Route::get('/rooms', [RoomsController::class, 'index'])->name('admin.rooms.index');
+        Route::post('/rooms', [RoomsController::class, 'store'])->name('admin.rooms.store');
+        Route::delete('/rooms/{room}', [RoomsController::class, 'destroy'])->name('admin.rooms.destroy');
 
         Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
     });

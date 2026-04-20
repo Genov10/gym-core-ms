@@ -8,11 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('locker_rooms_items', function (Blueprint $table) {
+        Schema::create('locker_room_items', function (Blueprint $table) {
             $table->id();
             $table->timestamp('locker_number')->nullable();
             $table->foreignId('locker_room_id')->nullable();
-            $table->boolean('is_free')->nullable();
+            $table->boolean('is_free')->default(true);
         });
     }
 
