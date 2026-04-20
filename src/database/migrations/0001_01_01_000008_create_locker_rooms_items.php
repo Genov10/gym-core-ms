@@ -1,0 +1,24 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('locker_rooms_items', function (Blueprint $table) {
+            $table->id();
+            $table->timestamp('locker_number')->nullable();
+            $table->foreignId('locker_room_id')->nullable();
+            $table->boolean('is_free')->nullable();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('locker_room_items');
+    }
+};
+
