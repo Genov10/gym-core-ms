@@ -50,6 +50,7 @@ services:
       APP_DEBUG: ${APP_DEBUG:-true}
     volumes:
       - ./src:/var/www/html
+      - vendor:/var/www/html/vendor
     depends_on:
       postgres:
         condition: service_healthy
@@ -76,10 +77,13 @@ services:
       - "${VITE_HOST_PORT:-5174}:${VITE_PORT:-5173}"
     volumes:
       - ./src:/var/www/html
+      - node_modules:/var/www/html/node_modules
     depends_on:
       - app
 
 volumes:
   pgdata:
   pgadmin:
+  vendor:
+  node_modules:
 

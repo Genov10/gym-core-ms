@@ -3,6 +3,12 @@ set -eu
 
 cd /var/www/html
 
+# Install PHP deps into container volume if missing.
+if [ ! -f vendor/autoload.php ]; then
+  echo "vendor/autoload.php not found; running composer install..."
+  composer install --no-interaction --prefer-dist
+fi
+
 # Ensure Laravel runtime dirs exist and are writable (dev-friendly on bind mounts).
 mkdir -p \
   storage/app \
