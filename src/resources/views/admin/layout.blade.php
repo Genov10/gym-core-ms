@@ -22,6 +22,7 @@
                     <nav class="hidden md:flex items-center gap-2 text-sm">
                         <a href="{{ url('/admin') }}" class="rounded-lg px-3 py-2 text-slate-200 hover:bg-slate-900/50">Главная</a>
                         <a href="{{ url('/admin/rooms') }}" class="rounded-lg px-3 py-2 text-slate-200 hover:bg-slate-900/50">Комнаты</a>
+                        <a href="{{ url('/admin/services') }}" class="rounded-lg px-3 py-2 text-slate-200 hover:bg-slate-900/50">Услуги</a>
                     </nav>
                 </div>
                 <p class="mt-2 text-xs text-slate-400">
