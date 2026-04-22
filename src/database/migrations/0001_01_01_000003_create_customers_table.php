@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('sex')->nullable();
             $table->string('telegram_id')->nullable();
             $table->timestamp('created_at')->nullable();
-            $table->string('phone')->nullable();
+            $table->string('phone')->nullable()->unique();
             $table->boolean('is_num_verified')->nullable();
             $table->string('email')->nullable();
         });
