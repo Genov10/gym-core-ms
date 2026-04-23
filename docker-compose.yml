@@ -24,10 +24,20 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - ./.env.docker
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@gym.local}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      # Compose variable interpolation does not use env_file values.
+      # Keep these explicit to avoid pgAdmin refusing invalid default emails.
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
       PGADMIN_REPLACE_SERVERS_ON_STARTUP: "True"
+      # Prevent random SECRET_KEY per start causing session invalidation/AnonymousUser.
+      # Note: PGADMIN_CONFIG_* values are evaluated as Python literals.
+      PGADMIN_CONFIG_SECRET_KEY: "'gym-core-ms-pgadmin-secret-key'"
+      # Reduce surprise auto-logout during local dev.
+      PGADMIN_CONFIG_MAX_SESSION_IDLE_TIME: 86400
+      PGADMIN_CONFIG_SESSION_EXPIRATION_TIME: 86400
     user: root
     entrypoint: /bin/sh -c "chmod 0600 /pgpass || true; /entrypoint.sh"
     ports:

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'created_at',
     'expired_at',
     'is_active',
+    'finished_visits_amount',
 ])]
 class CustomerGymService extends Model
 {
@@ -25,6 +26,7 @@ class CustomerGymService extends Model
             'created_at' => 'datetime',
             'expired_at' => 'datetime',
             'is_active' => 'boolean',
+            'finished_visits_amount' => 'integer',
         ];
     }
 

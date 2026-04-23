@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class CustomerVisit extends Model
 {
-    protected $table = 'customers_visits';
+    protected $table = 'customer_visits';
 
     public $timestamps = false;
 
@@ -26,7 +26,7 @@ class CustomerVisit extends Model
             'gym_service_id' => 'integer',
             'start' => 'datetime',
             'finish' => 'datetime',
-            'locker_number' => 'boolean',
+            'locker_number' => 'integer',
         ];
     }
 

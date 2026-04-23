@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('locker_room_items', function (Blueprint $table) {
             $table->id();
-            $table->timestamp('locker_number')->nullable();
+            $table->integer('locker_number')->nullable();
             $table->foreignId('locker_room_id')->nullable();
             $table->boolean('is_free')->default(true);
         });

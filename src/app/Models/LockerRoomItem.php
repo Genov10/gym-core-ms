@@ -21,7 +21,7 @@ class LockerRoomItem extends Model
     {
         return [
             'locker_room_id' => 'integer',
-            'locker_number' => 'datetime',
+            'locker_number' => 'integer',
             'is_free' => 'boolean',
         ];
     }
