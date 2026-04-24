@@ -99,7 +99,7 @@ class VisitController extends Controller
                     'message' => 'Visit started successfully',
                     'code' => 0,
                     'data' => [
-                        'visit' =>  base64_encode($visit->id),
+                        'visit' => base64_encode(json_encode($visit->toArray())),
                     ],
                 ], 200);
             } else {
