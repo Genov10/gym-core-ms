@@ -108,11 +108,27 @@ class VisitController extends Controller
                         'is_free' => 0,
                     ]);
 
+
+
+                
+                
+                $newFinishedVisitsAmount = (int) $customerGymService->finished_visits_amount + 1;
+
                 CustomerGymService::query()
                     ->where('id', $customerGymService->id)
                     ->update([
-                        'finished_visits_amount' => $customerGymService->finished_visits_amount + 1,
+                        'finished_visits_amount' => $newFinishedVisitsAmount,
                     ]);
+
+                    
+                if (! $is_periodical && $newFinishedVisitsAmount >= (int) $gymService->visit_amount) {
+                    CustomerGymService::query()
+                        ->where('id', $customerGymService->id)
+                        ->update([
+                            'expired_at' => Carbon::now(),
+                            'is_active' => 0,
+                        ]);
+                }
 
                 $visit = CustomerVisit::query()->create([
                     'customer_id' => $customer->id,
