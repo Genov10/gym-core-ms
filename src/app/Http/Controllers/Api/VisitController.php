@@ -53,7 +53,7 @@ class VisitController extends Controller
                 $can_pass = true;
             } else {
                 $numberOfVisitsRemaining = $gymService->visit_amount - $customerGymService->finished_visits_amount;
-                if ($numberOfVisitsRemaining >= 0) {
+                if ($numberOfVisitsRemaining > 0) {
                     $can_pass = true;
                 }
                 if ($numberOfVisitsRemaining <= 0) {
