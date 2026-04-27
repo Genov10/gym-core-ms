@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'start',
     'finish',
     'locker_number',
+    'locker_room_id',
+    'is_finished',
 ])]
 class CustomerVisit extends Model
 {
@@ -27,6 +29,8 @@ class CustomerVisit extends Model
             'start' => 'datetime',
             'finish' => 'datetime',
             'locker_number' => 'integer',
+            'locker_room_id' => 'integer',
+            'is_finished' => 'boolean',
         ];
     }
 

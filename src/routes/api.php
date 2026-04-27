@@ -10,4 +10,5 @@ Route::get('/gym-services', [GymServicesController::class, 'index']);
 Route::get('/gym-register-customer', [GymCustomerController::class, 'register']);
 Route::get('/gym-order-create', [OrderController::class, 'create']);
 Route::get('/gym-start-visit', [VisitController::class, 'startVisit']);
-
+Route::get('/gym-finish-visit', [VisitController::class, 'finishVisit']);
+Route::get('/gym-get-customer-gym-services', [GymCustomerController::class, 'getCustomerGymServices']);

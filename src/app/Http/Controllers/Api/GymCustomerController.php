@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\GymService;
+use App\Models\CustomerGymService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -52,6 +54,37 @@ class GymCustomerController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+    public function getCustomerGymServices(Request $request)
+    {
+        $data = $request->validate([
+            'telegram_id' => ['nullable', 'integer'],
+        ]);
+        
+        $customer = Customer::query()->where('telegram_id', $data['telegram_id'])->first();
+        if (! $customer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found',
+                'code' => 4,
+            ], 404);
+        }
+        
+        $customerGymServices = CustomerGymService::query()->where('customer_id', $customer->id)->where('is_active', 1)->get();
+        $services = [];
+        foreach ($customerGymServices as $customerGymService) {
+            $service =GymService::query()->where('id', $customerGymService->gym_service_id)->first();
+            $services[] = [
+                'id' => $service->id,
+                'name' => $service->name,
+            ];
+        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Customer gym services fetched successfully',
+            'code' => 0,
+            'data' => $services,
+        ], 200);
     }
 }
 
