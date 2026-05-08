@@ -58,10 +58,10 @@ class GymCustomerController extends Controller
     public function getCustomerGymServices(Request $request)
     {
         $data = $request->validate([
-            'telegram_id' => ['nullable', 'integer'],
+            'telegram_id' => ['required', 'integer'],
         ]);
         
-        $customer = Customer::query()->where('telegram_id', $data['telegram_id'])->first();
+        $customer = Customer::query()->where('telegram_id', (int) $data['telegram_id'])->first();
         if (! $customer) {
             return response()->json([
                 'success' => false,
@@ -70,13 +70,22 @@ class GymCustomerController extends Controller
             ], 404);
         }
         
-        $customerGymServices = CustomerGymService::query()->where('customer_id', $customer->id)->where('is_active', 1)->get();
+        $customerGymServices = CustomerGymService::query()
+            ->where('customer_id', (int) $customer->id)
+            ->where('is_active', 1)
+            ->with('gymService:id,name')
+            ->get();
+
         $services = [];
         foreach ($customerGymServices as $customerGymService) {
-            $service =GymService::query()->where('id', $customerGymService->gym_service_id)->first();
+            if (! $customerGymService->gymService) {
+                // Orphaned row: the related service was deleted; skip to avoid 500.
+                continue;
+            }
+
             $services[] = [
-                'id' => $service->id,
-                'name' => $service->name,
+                'id' => $customerGymService->gymService->id,
+                'name' => $customerGymService->gymService->name,
             ];
         }
         return response()->json([

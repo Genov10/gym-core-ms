@@ -18,7 +18,7 @@ class VisitController extends Controller
     public function startVisit(Request $request)
     {
         $data = $request->validate([
-            'telegram_id' => ['nullable', 'integer'],
+            'telegram_id' => ['required', 'integer'],
             'service_id' => ['required', 'integer'],
         ]);
 
@@ -26,6 +26,14 @@ class VisitController extends Controller
             $customer = Customer::query()
                 ->where('telegram_id', (int) $data['telegram_id'])
                 ->first();
+
+            if (! $customer) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Customer not found',
+                    'code' => 4,
+                ], 404);
+            }
 
             $notFinishedVisit = CustomerVisit::query()->where('customer_id', $customer->id)->where('is_finished', 0)->first();
             if ($notFinishedVisit) {
@@ -36,40 +44,61 @@ class VisitController extends Controller
                 ], 400);
             }
 
-            $customerGymService = CustomerGymService::query()
-                ->where('customer_id', (int) $customer->id)
-                ->where('gym_service_id', (int) $data['service_id'])
-                ->where('is_active', 1)
-                ->first();
-
-
             $gymService = GymService::query()
                 ->where('id', (int) $data['service_id'])
                 ->first();
 
-            $is_periodical = $gymService->is_periodical;
-            $can_pass = false;
-            if ($is_periodical) {
-                $can_pass = true;
-            } else {
-                $numberOfVisitsRemaining = $gymService->visit_amount - $customerGymService->finished_visits_amount;
-                if ($numberOfVisitsRemaining > 0) {
-                    $can_pass = true;
-                }
-                if ($numberOfVisitsRemaining <= 0) {
-                    $expired_at = Carbon::now();
-                    CustomerGymService::query()
-                        ->where('id', $customerGymService->id)
-                        ->update([
-                            'is_active' => 0,
-                            'expired_at' => $expired_at,
-                        ]);
-                }
-
+            if (! $gymService) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gym service not found',
+                    'code' => 4,
+                ], 404);
             }
 
-            if ($can_pass) {
-                $lockerRoom = LockerRoom::query()
+            $result = DB::transaction(function () use ($customer, $gymService) {
+                $customerGymService = CustomerGymService::query()
+                    ->where('customer_id', (int) $customer->id)
+                    ->where('gym_service_id', (int) $gymService->id)
+                    ->where('is_active', 1)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $customerGymService) {
+                    return [
+                        'status' => 404,
+                        'payload' => [
+                            'success' => false,
+                            'message' => 'Active customer service not found',
+                            'code' => 4,
+                        ],
+                    ];
+                }
+
+                $isPeriodical = (bool) $gymService->is_periodical;
+                if (! $isPeriodical) {
+                    $visitAmount = (int) $gymService->visit_amount;
+                    $finished = (int) $customerGymService->finished_visits_amount;
+                    $remaining = $visitAmount - $finished;
+
+                    if ($remaining <= 0) {
+                        // No visits left, deactivate and block.
+                        $customerGymService->is_active = 0;
+                        $customerGymService->expired_at = Carbon::now();
+                        $customerGymService->save();
+
+                        return [
+                            'status' => 400,
+                            'payload' => [
+                                'success' => false,
+                                'message' => 'Visit not allowed',
+                                'code' => 4,
+                            ],
+                        ];
+                    }
+                }
+
+                $lockerRooms = LockerRoom::query()
                     ->where('sex', $customer->sex)
                     ->where('is_staff', 0)
                     ->where('is_active', 1)
@@ -77,83 +106,66 @@ class VisitController extends Controller
 
                 $lockerRoomId = null;
                 $lockerId = null;
-                
-                foreach ($lockerRoom as $room) {
 
+                foreach ($lockerRooms as $room) {
                     $lockerRoomItem = LockerRoomItem::query()
-                        ->where('locker_room_id', $room->id)
+                        ->where('locker_room_id', (int) $room->id)
                         ->where('is_free', 1)
+                        ->lockForUpdate()
                         ->first();
 
-                        
                     if ($lockerRoomItem) {
-                        $lockerId = $lockerRoomItem->locker_number;
-                        $lockerRoomId = $room->id;
+                        $lockerId = (int) $lockerRoomItem->locker_number;
+                        $lockerRoomId = (int) $room->id;
+                        $lockerRoomItem->is_free = 0;
+                        $lockerRoomItem->save();
                         break;
                     }
                 }
 
                 if ($lockerRoomId === null || $lockerId === null) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'No free lockers available',
-                        'code' => 14,
-                    ], 409);
+                    return [
+                        'status' => 409,
+                        'payload' => [
+                            'success' => false,
+                            'message' => 'No free lockers available',
+                            'code' => 14,
+                        ],
+                    ];
                 }
 
-                LockerRoomItem::query()
-                    ->where('locker_room_id', $lockerRoomId)
-                    ->where('locker_number', $lockerId)
-                    ->update([
-                        'is_free' => 0,
-                    ]);
+                $customerGymService->finished_visits_amount = (int) $customerGymService->finished_visits_amount + 1;
+                $customerGymService->save();
 
-
-
-                
-                
-                $newFinishedVisitsAmount = (int) $customerGymService->finished_visits_amount + 1;
-
-                CustomerGymService::query()
-                    ->where('id', $customerGymService->id)
-                    ->update([
-                        'finished_visits_amount' => $newFinishedVisitsAmount,
-                    ]);
-
-                    
-                if (! $is_periodical && $newFinishedVisitsAmount >= (int) $gymService->visit_amount) {
-                    CustomerGymService::query()
-                        ->where('id', $customerGymService->id)
-                        ->update([
-                            'expired_at' => Carbon::now(),
-                            'is_active' => 0,
-                        ]);
+                if (! $isPeriodical && (int) $customerGymService->finished_visits_amount >= (int) $gymService->visit_amount) {
+                    $customerGymService->expired_at = Carbon::now();
+                    $customerGymService->is_active = 0;
+                    $customerGymService->save();
                 }
 
                 $visit = CustomerVisit::query()->create([
-                    'customer_id' => $customer->id,
-                    'gym_service_id' => $gymService->id,
+                    'customer_id' => (int) $customer->id,
+                    'gym_service_id' => (int) $gymService->id,
                     'start' => Carbon::now(),
-                    'locker_number' => $lockerId,
-                    'locker_room_id' => $lockerRoomId,
+                    'locker_number' => (int) $lockerId,
+                    'locker_room_id' => (int) $lockerRoomId,
                     'is_finished' => 0,
                 ]);
 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Visit started successfully',
-                    'code' => 0,
-                    'data' => [
-                        'visit' => base64_encode(json_encode($visit->toArray())),
+                return [
+                    'status' => 200,
+                    'payload' => [
+                        'success' => true,
+                        'message' => 'Visit started successfully',
+                        'code' => 0,
+                        'data' => [
+                            'visit' => base64_encode(json_encode($visit->toArray())),
+                        ],
                     ],
-                ], 200);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Visit not allowed',
-                    'code' => 4,
-                ], 400);
-            }
+                ];
+            });
+
+            return response()->json($result['payload'], $result['status']);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
