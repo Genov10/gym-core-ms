@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
@@ -35,4 +34,20 @@ return [
         ],
     ],
 
+    'wayforpay' => [
+        'merchant_account' => env('WAYFORPAY_MERCHANT_ACCOUNT', ''),
+        'secret_key' => env('WAYFORPAY_SECRET_KEY', ''),
+
+        // По доке: доменное имя веб-сайта торговца (обычно без протокола).
+        'merchant_domain_name' => env('WAYFORPAY_DOMAIN_NAME', ''),
+
+        'currency' => env('WAYFORPAY_CURRENCY', 'UAH'),
+        'language' => env('WAYFORPAY_LANGUAGE', 'UA'),
+
+        // Куда редиректить клиента после оплаты (опционально).
+        'return_url' => env('WAYFORPAY_RETURN_URL', ''),
+
+        // Callback от WayForPay (serviceUrl).
+        'service_url' => env('WAYFORPAY_SERVICE_URL', ''),
+    ],
 ];
