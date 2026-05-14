@@ -8,8 +8,11 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-gym_core}
       POSTGRES_USER: ${POSTGRES_USER:-gym}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gym_pass}
+    # Bind to loopback only: public 0.0.0.0:5433 gets constant "postgres" login probes
+    # (FATAL: password authentication failed for user "postgres" / role does not exist).
+    # Use SSH tunnel or `docker compose exec postgres psql` from the VPS for remote access.
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
