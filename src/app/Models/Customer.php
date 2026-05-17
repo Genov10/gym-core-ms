@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'name',
+    'lastname',
+    'username',
     'sex',
     'telegram_id',
     'created_at',
