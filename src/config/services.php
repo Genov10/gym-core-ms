@@ -34,20 +34,24 @@ return [
         ],
     ],
 
-    'wayforpay' => [
-        'merchant_account' => env('WAYFORPAY_MERCHANT_ACCOUNT', ''),
-        'secret_key' => env('WAYFORPAY_SECRET_KEY', ''),
+    'wayforpay' => (static function (): array {
+        $appUrl = rtrim((string) env('APP_URL', ''), '/');
 
-        // По доке: доменное имя веб-сайта торговца (обычно без протокола).
-        'merchant_domain_name' => env('WAYFORPAY_DOMAIN_NAME', ''),
+        return [
+            'merchant_account' => env('WAYFORPAY_MERCHANT_ACCOUNT', ''),
+            'secret_key' => env('WAYFORPAY_SECRET_KEY', ''),
 
-        'currency' => env('WAYFORPAY_CURRENCY', 'UAH'),
-        'language' => env('WAYFORPAY_LANGUAGE', 'UA'),
+            // По доке: доменное имя веб-сайта торговца (обычно без протокола).
+            'merchant_domain_name' => env('WAYFORPAY_DOMAIN_NAME', ''),
 
-        // Куда редиректить клиента после оплаты (опционально).
-        'return_url' => env('WAYFORPAY_RETURN_URL', ''),
+            'currency' => env('WAYFORPAY_CURRENCY', 'UAH'),
+            'language' => env('WAYFORPAY_LANGUAGE', 'UA'),
 
-        // Callback от WayForPay (serviceUrl).
-        'service_url' => env('WAYFORPAY_SERVICE_URL', ''),
-    ],
+            // Куда редиректить клиента после оплаты (returnUrl).
+            'return_url' => env('WAYFORPAY_RETURN_URL') ?: ($appUrl !== '' ? $appUrl.'/result' : ''),
+
+            // Callback от WayForPay (serviceUrl).
+            'service_url' => env('WAYFORPAY_SERVICE_URL') ?: ($appUrl !== '' ? $appUrl.'/api/wayforpay/callback' : ''),
+        ];
+    })(),
 ];

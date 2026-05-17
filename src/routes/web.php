@@ -1,9 +1,13 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\GymServicesController;
 use App\Http\Controllers\Admin\RoomsController;
+use App\Http\Controllers\PaymentResultController;
+use Illuminate\Support\Facades\Route;
+
+// WayForPay редирект після оплати (POST без CSRF — див. bootstrap/app.php)
+Route::match(['get', 'post'], '/result', PaymentResultController::class)->name('payment.result');
 
 Route::get('/login', function () {
     return redirect('/admin/login');
