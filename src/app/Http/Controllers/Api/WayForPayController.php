@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\CustomerGymService;
 use App\Models\GymService;
 use App\Models\PaymentOrder;
+use App\Services\PaymentResultNotifier;
 use App\Services\WayForPayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -129,7 +130,7 @@ class WayForPayController extends Controller
         ]);
     }
 
-    public function callback(Request $request, WayForPayService $wayForPay)
+    public function callback(Request $request, WayForPayService $wayForPay, PaymentResultNotifier $paymentResultNotifier)
     {
         $payloadRaw = $request->getContent();
         $payload = json_decode($payloadRaw, true);
@@ -159,7 +160,9 @@ class WayForPayController extends Controller
             'callback' => $payload,
         ]);
 
-        if (strcasecmp($transactionStatus, 'Approved') === 0) {
+        $paymentSuccess = strcasecmp($transactionStatus, 'Approved') === 0;
+
+        if ($paymentSuccess) {
             $order->status = 'approved';
 
             // Уже есть активная услуга — повторно не создаём.
@@ -207,6 +210,21 @@ class WayForPayController extends Controller
         }
 
         $order->save();
+
+        $customer = $order->customer_id
+            ? Customer::query()->where('id', $order->customer_id)->first()
+            : null;
+        $service = $order->gym_service_id
+            ? GymService::query()->where('id', $order->gym_service_id)->first()
+            : null;
+
+        if ($customer && $customer->telegram_id) {
+            $paymentResultNotifier->notify(
+                telegramId: (int) $customer->telegram_id,
+                serviceName: (string) ($service?->name ?? ''),
+                success: $paymentSuccess,
+            );
+        }
 
         $time = time();
         $status = 'accept';

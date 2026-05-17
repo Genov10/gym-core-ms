@@ -34,6 +34,10 @@ return [
         ],
     ],
 
+    'payment_result' => [
+        'webhook_url' => env('PAYMENT_RESULT_WEBHOOK_URL', ''),
+    ],
+
     'wayforpay' => (static function (): array {
         $appUrl = rtrim((string) env('APP_URL', ''), '/');
 
