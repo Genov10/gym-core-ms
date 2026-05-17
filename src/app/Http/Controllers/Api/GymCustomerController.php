@@ -15,6 +15,8 @@ class GymCustomerController extends Controller
     {
         $data = $request->validate([
             'name' => ['nullable', 'string', 'max:255'],
+            'lastname' => ['nullable', 'string', 'max:255'],
+            'username' => ['nullable', 'string', 'max:255'],
             'sex' => ['nullable', 'in:male,female'],
             'telegram_id' => ['nullable', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:255'],
@@ -26,6 +28,8 @@ class GymCustomerController extends Controller
                 ['phone' => $data['phone']],
                 [
                     'name' => $data['name'] ?? null,
+                    'lastname' => $data['lastname'] ?? null,
+                    'username' => $data['username'] ?? null,
                     'sex' => $data['sex'] ?? null,
                     'telegram_id' => $data['telegram_id'] ?? null,
                     'created_at' => Carbon::now(),
