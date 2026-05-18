@@ -1,1 +1,1 @@
-//
+import './admin-table-filter';
