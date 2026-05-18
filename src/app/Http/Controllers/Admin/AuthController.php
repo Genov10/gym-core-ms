@@ -25,7 +25,7 @@ class AuthController extends Controller
         // For dev convenience: allow "gym_admin" as login, mapping it to email.
         $email = str_contains($login, '@') ? $login : ($login.'@gym.local');
 
-        if (Auth::attempt(['email' => $email, 'password' => $data['password']], $request->boolean('remember'))) {
+        if (Auth::attempt(['email' => $email, 'password' => $data['password']])) {
             $request->session()->regenerate();
 
             return redirect()->intended('/admin');

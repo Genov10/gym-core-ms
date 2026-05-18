@@ -20,7 +20,7 @@
 
             <div class="admin-field">
                 <label for="login">Логин</label>
-                <input id="login" name="login" type="text" autocomplete="username" value="{{ old('login') }}" required class="admin-input" placeholder="gym_admin">
+                <input id="login" name="login" type="text" autocomplete="username" value="{{ old('login') }}" required class="admin-input">
                 @error('login')<p class="admin-error">{{ $message }}</p>@enderror
             </div>
 
@@ -30,17 +30,8 @@
                 @error('password')<p class="admin-error">{{ $message }}</p>@enderror
             </div>
 
-            <label class="admin-check" style="margin-bottom:1rem">
-                <input type="checkbox" name="remember">
-                Запомнить
-            </label>
-
             <button type="submit" class="admin-btn admin-btn--primary admin-btn--block">Войти</button>
         </form>
     </div>
-
-    <p class="admin-login-note">
-        По умолчанию: <code>gym_admin</code> / <code>gym_admin</code>
-    </p>
 </body>
 </html>
