@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CustomersController;
 use App\Http\Controllers\Admin\GymServicesController;
 use App\Http\Controllers\Admin\RoomsController;
+use App\Http\Controllers\Admin\SalesController;
 use App\Http\Controllers\PaymentResultController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +39,8 @@ Route::prefix('admin')->group(function () {
         Route::delete('/services/{service}', [GymServicesController::class, 'destroy'])->name('admin.services.destroy');
 
         Route::get('/customers', [CustomersController::class, 'index'])->name('admin.customers.index');
+
+        Route::get('/sales', [SalesController::class, 'index'])->name('admin.sales.index');
 
         Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
     });

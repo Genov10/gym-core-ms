@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     'order_reference',
@@ -24,6 +25,16 @@ class PaymentOrder extends Model
             'amount' => 'float',
             'provider_payload' => 'array',
         ];
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function gymService(): BelongsTo
+    {
+        return $this->belongsTo(GymService::class);
     }
 }
 

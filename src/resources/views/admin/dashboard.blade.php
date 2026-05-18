@@ -30,6 +30,10 @@
                 <span>Клиенты</span>
                 <span>→</span>
             </a>
+            <a href="{{ url('/admin/sales') }}" class="admin-link-card">
+                <span>Статистика продаж</span>
+                <span>→</span>
+            </a>
         </section>
     </div>
 @endsection
