@@ -29,6 +29,9 @@
                 <a href="{{ url('/admin/services') }}" class="{{ request()->is('admin/services*') ? 'is-active' : '' }}">
                     <span aria-hidden="true">◎</span> Услуги
                 </a>
+                <a href="{{ url('/admin/customers') }}" class="{{ request()->is('admin/customers*') ? 'is-active' : '' }}">
+                    <span aria-hidden="true">●</span> Клиенты
+                </a>
             </nav>
 
             <div class="admin-sidebar__foot">
@@ -47,6 +50,7 @@
                     <a href="{{ url('/admin') }}" class="{{ request()->is('admin') && ! request()->is('admin/*') ? 'is-active' : '' }}">Главная</a>
                     <a href="{{ url('/admin/rooms') }}" class="{{ request()->is('admin/rooms*') ? 'is-active' : '' }}">Комнаты</a>
                     <a href="{{ url('/admin/services') }}" class="{{ request()->is('admin/services*') ? 'is-active' : '' }}">Услуги</a>
+                    <a href="{{ url('/admin/customers') }}" class="{{ request()->is('admin/customers*') ? 'is-active' : '' }}">Клиенты</a>
                 </nav>
                 <h1>@yield('title', 'Admin')</h1>
                 @hasSection('subtitle')

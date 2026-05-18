@@ -26,6 +26,10 @@
                 <span>Услуги и абонементы</span>
                 <span>→</span>
             </a>
+            <a href="{{ url('/admin/customers') }}" class="admin-link-card">
+                <span>Клиенты</span>
+                <span>→</span>
+            </a>
         </section>
     </div>
 @endsection

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\CustomersController;
 use App\Http\Controllers\Admin\GymServicesController;
 use App\Http\Controllers\Admin\RoomsController;
 use App\Http\Controllers\PaymentResultController;
@@ -35,6 +36,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/services', [GymServicesController::class, 'index'])->name('admin.services.index');
         Route::post('/services', [GymServicesController::class, 'store'])->name('admin.services.store');
         Route::delete('/services/{service}', [GymServicesController::class, 'destroy'])->name('admin.services.destroy');
+
+        Route::get('/customers', [CustomersController::class, 'index'])->name('admin.customers.index');
 
         Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
     });
