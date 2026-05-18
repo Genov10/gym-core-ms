@@ -50,11 +50,12 @@ class GymServicesController extends Controller
         return redirect('/admin/services')->with('status', 'Услуга добавлена.');
     }
 
-    public function destroy(GymService $service)
+    public function deactivate(GymService $service)
     {
-        $service->delete();
+        $service->is_active = false;
+        $service->save();
 
-        return redirect('/admin/services')->with('status', 'Услуга удалена.');
+        return redirect('/admin/services')->with('status', 'Услуга деактивирована.');
     }
 }
 

@@ -91,11 +91,14 @@
                             <td>{{ $service->day_amount ?? '—' }}</td>
                             <td>{{ $service->visit_amount ?? '—' }}</td>
                             <td class="text-right">
-                                <form method="POST" action="{{ url('/admin/services/'.$service->id) }}" onsubmit="return confirm('Удалить услугу?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="admin-btn admin-btn--danger">Удалить</button>
-                                </form>
+                                @if ($service->is_active)
+                                    <form method="POST" action="{{ url('/admin/services/'.$service->id.'/deactivate') }}" onsubmit="return confirm('Деактивировать услугу? Она не будет доступна для покупки.')">
+                                        @csrf
+                                        <button type="submit" class="admin-btn admin-btn--danger admin-btn--sm">Деактивировать</button>
+                                    </form>
+                                @else
+                                    <span class="hint">—</span>
+                                @endif
                             </td>
                         </tr>
                     @empty
