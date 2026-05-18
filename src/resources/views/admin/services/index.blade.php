@@ -52,13 +52,7 @@
     </section>
 
     <section class="admin-panel">
-        <div class="admin-toolbar">
-            <h2>Список услуг</h2>
-            <div class="admin-field">
-                <label for="services-filter">Поиск</label>
-                <input id="services-filter" type="search" class="admin-input" placeholder="Название, ID, цена…" data-admin-table-filter="services-table">
-            </div>
-        </div>
+        <h2>Список услуг</h2>
 
         <div class="admin-table-wrap">
             <table id="services-table" class="admin-table">
