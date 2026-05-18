@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Admin') — Gym Admin</title>
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+    @stack('styles')
     @vite(['resources/js/app.js'])
 </head>
 <body class="admin-body">

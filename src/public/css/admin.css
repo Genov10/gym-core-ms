@@ -631,6 +631,101 @@ select.admin-input {
     cursor: pointer;
 }
 
+.admin-toolbar--stack {
+    flex-direction: column;
+    align-items: stretch !important;
+}
+
+.admin-filters--sales {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    width: 100%;
+    align-items: end;
+}
+
+@media (min-width: 900px) {
+    .admin-filters--sales {
+        grid-template-columns: auto auto auto 1fr auto;
+    }
+}
+
+.admin-date-range {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.admin-date-range .admin-field {
+    flex: 1;
+    min-width: 9rem;
+}
+
+.admin-date-range__sep {
+    padding-bottom: 0.65rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.admin-filter-actions {
+    display: flex;
+    align-items: flex-end;
+}
+
+.admin-field--search {
+    min-width: 12rem;
+}
+
+.admin-date-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.admin-date-preset {
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid #4c3d6e;
+    background: #1a1228;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.admin-date-preset:hover {
+    border-color: #7c3aed;
+    color: #fff;
+}
+
+.admin-date-preset.is-active {
+    border-color: #8b5cf6;
+    background: rgba(124, 58, 237, 0.35);
+    color: #fff;
+}
+
+/* Flatpickr — под тёмную админку */
+.flatpickr-calendar {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+    border-radius: 0.75rem !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    background: #7c3aed !important;
+    border-color: #7c3aed !important;
+}
+
+.flatpickr-day:hover {
+    background: rgba(124, 58, 237, 0.35) !important;
+}
+
+input.flatpickr-input.admin-input {
+    cursor: pointer;
+}
+
 .admin-empty {
     padding: 2.5rem 1rem;
     text-align: center;
