@@ -5,21 +5,96 @@
 
 @section('content')
     <section class="admin-panel">
-        <div class="admin-toolbar">
+        <div class="admin-toolbar admin-toolbar--stack">
             <div>
                 <h2>Клиенты</h2>
-                <p class="hint">Всего: {{ $customers->count() }}</p>
+                <p class="hint">Показано: {{ $customers->count() }}</p>
             </div>
-            <div class="admin-field">
-                <label for="customers-filter">Поиск</label>
-                <input
-                    id="customers-filter"
-                    type="search"
-                    class="admin-input"
-                    placeholder="Имя, телефон, email, telegram…"
-                    data-admin-table-filter="customers-table"
-                >
-            </div>
+
+            <form method="GET" action="{{ url('/admin/customers') }}" class="admin-filters admin-filters--customers">
+                <div class="admin-field">
+                    <label for="name">Имя</label>
+                    <input
+                        id="name"
+                        name="name"
+                        type="search"
+                        class="admin-input"
+                        value="{{ $filters['name'] }}"
+                        placeholder="Часть имени"
+                        autocomplete="off"
+                    >
+                </div>
+
+                <div class="admin-field">
+                    <label for="lastname">Фамилия</label>
+                    <input
+                        id="lastname"
+                        name="lastname"
+                        type="search"
+                        class="admin-input"
+                        value="{{ $filters['lastname'] }}"
+                        placeholder="Часть фамилии"
+                        autocomplete="off"
+                    >
+                </div>
+
+                <div class="admin-field">
+                    <label for="phone">Телефон</label>
+                    <input
+                        id="phone"
+                        name="phone"
+                        type="search"
+                        class="admin-input"
+                        value="{{ $filters['phone'] }}"
+                        placeholder="+380…"
+                        autocomplete="off"
+                    >
+                </div>
+
+                <div class="admin-field">
+                    <label for="email">Email</label>
+                    <input
+                        id="email"
+                        name="email"
+                        type="search"
+                        class="admin-input"
+                        value="{{ $filters['email'] }}"
+                        placeholder="example@mail.com"
+                        autocomplete="off"
+                    >
+                </div>
+
+                <div class="admin-field">
+                    <label for="identity">Username / Telegram ID</label>
+                    <input
+                        id="identity"
+                        name="identity"
+                        type="search"
+                        class="admin-input"
+                        value="{{ $filters['identity'] }}"
+                        placeholder="@username или 123456789"
+                        autocomplete="off"
+                    >
+                </div>
+
+                <div class="admin-field admin-field--search">
+                    <label for="customers-filter">Поиск в таблице</label>
+                    <input
+                        id="customers-filter"
+                        type="search"
+                        class="admin-input"
+                        placeholder="Быстрый поиск по строкам…"
+                        data-admin-table-filter="customers-table"
+                    >
+                </div>
+
+                <div class="admin-filter-actions">
+                    <button type="submit" class="admin-btn admin-btn--primary">Применить</button>
+                    @if (collect($filters)->filter()->isNotEmpty())
+                        <a href="{{ url('/admin/customers') }}" class="admin-btn admin-btn--ghost">Сбросить</a>
+                    @endif
+                </div>
+            </form>
         </div>
 
         <div class="admin-table-wrap">
@@ -66,7 +141,13 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="admin-empty">Клиентов пока нет.</td>
+                            <td colspan="10" class="admin-empty">
+                                @if (collect($filters)->filter()->isNotEmpty())
+                                    По заданным фильтрам клиентов не найдено.
+                                @else
+                                    Клиентов пока нет.
+                                @endif
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
