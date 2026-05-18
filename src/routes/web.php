@@ -33,7 +33,8 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/rooms', [RoomsController::class, 'index'])->name('admin.rooms.index');
         Route::post('/rooms', [RoomsController::class, 'store'])->name('admin.rooms.store');
-        Route::delete('/rooms/{room}', [RoomsController::class, 'destroy'])->name('admin.rooms.destroy');
+        Route::get('/rooms/{room}', [RoomsController::class, 'show'])->name('admin.rooms.show');
+        Route::put('/rooms/{room}', [RoomsController::class, 'update'])->name('admin.rooms.update');
 
         Route::get('/services', [GymServicesController::class, 'index'])->name('admin.services.index');
         Route::post('/services', [GymServicesController::class, 'store'])->name('admin.services.store');

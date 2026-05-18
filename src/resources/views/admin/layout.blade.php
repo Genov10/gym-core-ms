@@ -25,7 +25,7 @@
                     <span aria-hidden="true">⌂</span> Главная
                 </a>
                 <a href="{{ url('/admin/rooms') }}" class="{{ request()->is('admin/rooms*') ? 'is-active' : '' }}">
-                    <span aria-hidden="true">◫</span> Комнаты
+                    <span aria-hidden="true">◫</span> Раздевалки
                 </a>
                 <a href="{{ url('/admin/services') }}" class="{{ request()->is('admin/services*') ? 'is-active' : '' }}">
                     <span aria-hidden="true">◎</span> Услуги
@@ -75,7 +75,7 @@
             <header class="admin-topbar">
                 <nav class="admin-topnav">
                     <a href="{{ url('/admin') }}" class="{{ request()->is('admin') && ! request()->is('admin/*') ? 'is-active' : '' }}">Главная</a>
-                    <a href="{{ url('/admin/rooms') }}" class="{{ request()->is('admin/rooms*') ? 'is-active' : '' }}">Комнаты</a>
+                    <a href="{{ url('/admin/rooms') }}" class="{{ request()->is('admin/rooms*') ? 'is-active' : '' }}">Раздевалки</a>
                     <a href="{{ url('/admin/services') }}" class="{{ request()->is('admin/services*') ? 'is-active' : '' }}">Услуги</a>
                     <a href="{{ url('/admin/customers') }}" class="{{ request()->is('admin/customers*') ? 'is-active' : '' }}">Клиенты</a>
                     <a href="{{ url('/admin/sales') }}" class="{{ request()->is('admin/sales*') ? 'is-active' : '' }}">Продажи</a>

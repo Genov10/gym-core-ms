@@ -1,11 +1,11 @@
 @extends('admin.layout')
 
-@section('title', 'Комнаты')
+@section('title', 'Раздевалки')
 @section('subtitle', 'Управление раздевалками и шкафчиками')
 
 @section('content')
     <section class="admin-panel">
-        <h2>Добавить комнату</h2>
+        <h2>Добавить раздевалку</h2>
         <p class="hint">
             Создаст запись в <code>locker_rooms</code> и шкафчики в <code>locker_room_items</code>
         </p>
@@ -52,7 +52,7 @@
 
     <section class="admin-panel">
         <div class="admin-toolbar">
-            <h2>Список комнат</h2>
+            <h2>Список раздевалок</h2>
             <div class="admin-field">
                 <label for="rooms-filter">Поиск</label>
                 <input id="rooms-filter" type="search" class="admin-input" placeholder="Название, ID, пол…" data-admin-table-filter="rooms-table">
@@ -69,7 +69,7 @@
                         <th>Персонал</th>
                         <th>Шкафчики</th>
                         <th>Создано</th>
-                        <th class="text-right">Действия</th>
+                        <th class="text-right"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -86,16 +86,12 @@
                             <td>{{ $room->locker_amount }}</td>
                             <td style="color:#94a3b8">{{ $room->create_time?->format('Y-m-d H:i') }}</td>
                             <td class="text-right">
-                                <form method="POST" action="{{ url('/admin/rooms/'.$room->id) }}" onsubmit="return confirm('Удалить комнату и все её шкафчики?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="admin-btn admin-btn--danger">Удалить</button>
-                                </form>
+                                <a href="{{ url('/admin/rooms/'.$room->id) }}" class="admin-btn admin-btn--ghost">Открыть</a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="admin-empty">Комнат пока нет. Добавьте первую в форме выше.</td>
+                            <td colspan="7" class="admin-empty">Раздевалок пока нет. Добавьте первую в форме выше.</td>
                         </tr>
                     @endforelse
                 </tbody>

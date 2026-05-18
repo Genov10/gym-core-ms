@@ -8,7 +8,7 @@
         <section class="admin-panel">
             <h2>Разделы</h2>
             <a href="{{ url('/admin/rooms') }}" class="admin-link-card">
-                <span>Комнаты и шкафчики</span>
+                <span>Раздевалки и шкафчики</span>
                 <span>→</span>
             </a>
             <a href="{{ url('/admin/services') }}" class="admin-link-card">

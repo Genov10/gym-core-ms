@@ -453,6 +453,10 @@ a {
     width: 100%;
 }
 
+.admin-back {
+    margin: 0 0 1rem;
+}
+
 /* Toolbar */
 .admin-toolbar {
     display: flex;
