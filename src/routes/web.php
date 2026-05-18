@@ -41,6 +41,7 @@ Route::prefix('admin')->group(function () {
         Route::delete('/services/{service}', [GymServicesController::class, 'destroy'])->name('admin.services.destroy');
 
         Route::get('/customers', [CustomersController::class, 'index'])->name('admin.customers.index');
+        Route::get('/customers/{customer}', [CustomersController::class, 'show'])->name('admin.customers.show');
 
         Route::get('/sales', [SalesController::class, 'index'])->name('admin.sales.index');
 

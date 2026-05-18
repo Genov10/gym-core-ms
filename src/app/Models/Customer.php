@@ -40,6 +40,11 @@ class Customer extends Model
         return $this->hasMany(CustomerGymService::class);
     }
 
+    public function paymentOrders(): HasMany
+    {
+        return $this->hasMany(PaymentOrder::class);
+    }
+
     public function gymServices(): BelongsToMany
     {
         return $this->belongsToMany(GymService::class, 'customers_gym_services')
