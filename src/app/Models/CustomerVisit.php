@@ -43,5 +43,10 @@ class CustomerVisit extends Model
     {
         return $this->belongsTo(GymService::class);
     }
+
+    public function lockerRoom(): BelongsTo
+    {
+        return $this->belongsTo(LockerRoom::class);
+    }
 }
 

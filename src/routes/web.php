@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CustomersController;
 use App\Http\Controllers\Admin\GymServicesController;
 use App\Http\Controllers\Admin\RoomsController;
 use App\Http\Controllers\Admin\SalesController;
+use App\Http\Controllers\Admin\VisitsController;
 use App\Http\Controllers\PaymentResultController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +42,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/customers', [CustomersController::class, 'index'])->name('admin.customers.index');
 
         Route::get('/sales', [SalesController::class, 'index'])->name('admin.sales.index');
+
+        Route::get('/visits', [VisitsController::class, 'index'])->name('admin.visits.index');
 
         Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
     });

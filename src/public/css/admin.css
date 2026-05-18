@@ -573,6 +573,16 @@ a {
     .admin-stats {
         grid-template-columns: repeat(4, 1fr);
     }
+
+    .admin-stats--3 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 640px) and (max-width: 1099px) {
+    .admin-stats--3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .admin-stat-card {

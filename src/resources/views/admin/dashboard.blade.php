@@ -34,6 +34,10 @@
                 <span>Статистика продаж</span>
                 <span>→</span>
             </a>
+            <a href="{{ url('/admin/visits') }}" class="admin-link-card">
+                <span>Посещения</span>
+                <span>→</span>
+            </a>
         </section>
     </div>
 @endsection

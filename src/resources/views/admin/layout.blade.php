@@ -51,6 +51,14 @@
                     </span>
                     Продажи
                 </a>
+                <a href="{{ url('/admin/visits') }}" class="{{ request()->is('admin/visits*') ? 'is-active' : '' }}">
+                    <span class="admin-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </span>
+                    Посещения
+                </a>
             </nav>
 
             <div class="admin-sidebar__foot">
@@ -71,6 +79,7 @@
                     <a href="{{ url('/admin/services') }}" class="{{ request()->is('admin/services*') ? 'is-active' : '' }}">Услуги</a>
                     <a href="{{ url('/admin/customers') }}" class="{{ request()->is('admin/customers*') ? 'is-active' : '' }}">Клиенты</a>
                     <a href="{{ url('/admin/sales') }}" class="{{ request()->is('admin/sales*') ? 'is-active' : '' }}">Продажи</a>
+                    <a href="{{ url('/admin/visits') }}" class="{{ request()->is('admin/visits*') ? 'is-active' : '' }}">Посещения</a>
                 </nav>
                 <h1>@yield('title', 'Admin')</h1>
                 @hasSection('subtitle')
