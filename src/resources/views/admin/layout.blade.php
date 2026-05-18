@@ -30,7 +30,13 @@
                     <span aria-hidden="true">◎</span> Услуги
                 </a>
                 <a href="{{ url('/admin/customers') }}" class="{{ request()->is('admin/customers*') ? 'is-active' : '' }}">
-                    <span aria-hidden="true">●</span> Клиенты
+                    <span class="admin-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M5 20c0-4 3.5-6 7-6s7 2 7 6"/>
+                        </svg>
+                    </span>
+                    Клиенты
                 </a>
             </nav>
 

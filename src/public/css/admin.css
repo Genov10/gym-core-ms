@@ -103,6 +103,23 @@ a {
     padding: 1rem 0.75rem;
 }
 
+.admin-nav-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    width: 1.15rem;
+    height: 1.15rem;
+    color: #c4b5fd;
+}
+
+.admin-nav-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.admin-nav a.is-active .admin-nav-icon {
+    color: #e9d5ff;
+}
+
 .admin-nav a {
     display: flex;
     align-items: center;
