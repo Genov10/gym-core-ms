@@ -12,7 +12,6 @@
     <div class="admin-login-card">
         <div class="admin-login-card__head">
             <h1>Вход в админку</h1>
-            <p><code>/admin</code></p>
         </div>
 
         <form method="POST" action="{{ url('/admin/login') }}">
