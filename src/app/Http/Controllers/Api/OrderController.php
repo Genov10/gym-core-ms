@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ChecksCustomerBan;
 use App\Models\Customer;
 use App\Models\GymService;
 use App\Models\CustomerGymService;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\Http;
 
 class OrderController extends Controller
 {
+    use ChecksCustomerBan;
+
     public function create(Request $request, WayForPayService $wayForPay)
     {
         $data = $request->validate([
@@ -45,6 +48,10 @@ class OrderController extends Controller
                     'message' => 'Customer not found',
                     'code' => 4,
                 ], 404);
+            }
+
+            if ($banResponse = $this->denyBannedCustomer($customer)) {
+                return $banResponse;
             }
 
             $customerGymServiceCheck = CustomerGymService::query()->where('customer_id', $customer->id)->where('gym_service_id', $service->id)->where('is_active', 1)->first();

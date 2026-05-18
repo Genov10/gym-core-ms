@@ -108,6 +108,18 @@ class CustomersController extends Controller
         ]);
     }
 
+    public function toggleBan(Customer $customer)
+    {
+        $customer->is_banned = ! $customer->is_banned;
+        $customer->save();
+
+        $message = $customer->is_banned
+            ? 'Клиент заблокирован.'
+            : 'Блокировка снята.';
+
+        return redirect('/admin/customers/'.$customer->id)->with('status', $message);
+    }
+
     private function applyLikeFilter(Builder $query, string $column, string $value): void
     {
         if ($value === '') {

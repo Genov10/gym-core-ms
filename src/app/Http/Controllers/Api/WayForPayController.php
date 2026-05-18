@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ChecksCustomerBan;
 use App\Models\Customer;
 use App\Models\CustomerGymService;
 use App\Models\GymService;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\Http;
 
 class WayForPayController extends Controller
 {
+    use ChecksCustomerBan;
+
     public function purchase(Request $request, WayForPayService $wayForPay)
     {
         $data = $request->validate([
@@ -44,6 +47,10 @@ class WayForPayController extends Controller
                 'message' => 'Customer not found',
                 'code' => 4,
             ], 404);
+        }
+
+        if ($banResponse = $this->denyBannedCustomer($customer)) {
+            return $banResponse;
         }
 
         $alreadyActive = CustomerGymService::query()
@@ -162,6 +169,14 @@ class WayForPayController extends Controller
 
         $paymentSuccess = strcasecmp($transactionStatus, 'Approved') === 0;
 
+        $customer = $order->customer_id
+            ? Customer::query()->where('id', $order->customer_id)->first()
+            : null;
+
+        if ($paymentSuccess && $customer?->is_banned) {
+            $paymentSuccess = false;
+        }
+
         if ($paymentSuccess) {
             $order->status = 'approved';
 
@@ -211,9 +226,6 @@ class WayForPayController extends Controller
 
         $order->save();
 
-        $customer = $order->customer_id
-            ? Customer::query()->where('id', $order->customer_id)->first()
-            : null;
         $service = $order->gym_service_id
             ? GymService::query()->where('id', $order->gym_service_id)->first()
             : null;

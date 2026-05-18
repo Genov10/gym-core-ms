@@ -8,6 +8,26 @@
         <a href="{{ url('/admin/customers') }}" class="admin-btn admin-btn--ghost">← К списку клиентов</a>
     </p>
 
+    @if ($customer->is_banned)
+        <div class="admin-alert admin-alert--banned">
+            <strong>Клиент заблокирован</strong>
+            <span>Доступ к API и покупкам отключён (is_banned = true).</span>
+        </div>
+    @endif
+
+    <section class="admin-panel admin-customer-actions">
+        <form method="POST" action="{{ url('/admin/customers/'.$customer->id.'/toggle-ban') }}">
+            @csrf
+            @if ($customer->is_banned)
+                <button type="submit" class="admin-btn admin-btn--primary">Разблокировать</button>
+            @else
+                <button type="submit" class="admin-btn admin-btn--danger" onclick="return confirm('Заблокировать клиента? Он не сможет пользоваться API.')">
+                    Заблокировать
+                </button>
+            @endif
+        </form>
+    </section>
+
     <section class="admin-panel admin-customer-header">
         <div class="admin-customer-header__main">
             <h2>{{ $displayName }}</h2>

@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'phone',
     'is_num_verified',
     'email',
+    'is_banned',
 ])]
 class Customer extends Model
 {
@@ -27,6 +28,7 @@ class Customer extends Model
         return [
             'created_at' => 'datetime',
             'is_num_verified' => 'boolean',
+            'is_banned' => 'boolean',
         ];
     }
 

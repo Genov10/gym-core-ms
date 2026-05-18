@@ -110,6 +110,7 @@
                         <th>Телефон</th>
                         <th>Email</th>
                         <th>Тел. проверен</th>
+                        <th>Статус</th>
                         <th>Создан</th>
                         <th class="text-right"></th>
                     </tr>
@@ -138,6 +139,13 @@
                                     {{ $customer->is_num_verified ? 'Да' : 'Нет' }}
                                 </span>
                             </td>
+                            <td>
+                                @if ($customer->is_banned)
+                                    <span class="admin-badge admin-badge--danger">Заблокирован</span>
+                                @else
+                                    <span class="admin-badge admin-badge--ok">Активен</span>
+                                @endif
+                            </td>
                             <td style="color:#94a3b8;white-space:nowrap">{{ $customer->created_at?->format('Y-m-d H:i') ?? '—' }}</td>
                             <td class="text-right">
                                 <a href="{{ url('/admin/customers/'.$customer->id) }}" class="admin-btn admin-btn--ghost">Открыть</a>
@@ -145,7 +153,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" class="admin-empty">
+                            <td colspan="12" class="admin-empty">
                                 @if (collect($filters)->filter()->isNotEmpty())
                                     По заданным фильтрам клиентов не найдено.
                                 @else

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ChecksCustomerBan;
 use App\Models\Customer;
 use App\Models\CustomerGymService;
 use App\Models\CustomerVisit;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 
 class VisitController extends Controller
 {
+    use ChecksCustomerBan;
+
     public function startVisit(Request $request)
     {
         $data = $request->validate([
@@ -33,6 +36,10 @@ class VisitController extends Controller
                     'message' => 'Customer not found',
                     'code' => 4,
                 ], 404);
+            }
+
+            if ($banResponse = $this->denyBannedCustomer($customer)) {
+                return $banResponse;
             }
 
             $notFinishedVisit = CustomerVisit::query()->where('customer_id', $customer->id)->where('is_finished', 0)->first();
@@ -192,6 +199,10 @@ class VisitController extends Controller
                     'message' => 'Customer not found',
                     'code' => 4,
                 ], 404);
+            }
+
+            if ($banResponse = $this->denyBannedCustomer($customer)) {
+                return $banResponse;
             }
 
             $result = DB::transaction(function () use ($customer) {

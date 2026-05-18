@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\ChecksCustomerBan;
 use App\Models\Customer;
 use App\Models\GymService;
 use App\Models\CustomerGymService;
@@ -11,6 +12,8 @@ use Illuminate\Support\Carbon;
 
 class GymCustomerController extends Controller
 {
+    use ChecksCustomerBan;
+
     public function register(Request $request)
     {
         $data = $request->validate([
@@ -37,6 +40,10 @@ class GymCustomerController extends Controller
                     'is_num_verified' => false,
                 ]
             );
+
+            if ($banResponse = $this->denyBannedCustomer($customer)) {
+                return $banResponse;
+            }
 
             if (! $customer->wasRecentlyCreated) {
                 return response()->json([
@@ -73,7 +80,11 @@ class GymCustomerController extends Controller
                 'code' => 4,
             ], 404);
         }
-        
+
+        if ($banResponse = $this->denyBannedCustomer($customer)) {
+            return $banResponse;
+        }
+
         $customerGymServices = CustomerGymService::query()
             ->where('customer_id', (int) $customer->id)
             ->where('is_active', 1)
