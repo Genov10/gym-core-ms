@@ -24,6 +24,7 @@ class GymServicesController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:5000'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
             // 'is_periodical' => ['nullable', 'boolean'],
@@ -37,6 +38,7 @@ class GymServicesController extends Controller
         }
         GymService::query()->create([
             'name' => $data['name'],
+            'description' => $data['description'] ?? null,
             'price' => $data['price'] ?? null,
             'is_active' => (bool) ($data['is_active'] ?? false),
             'is_periodical' => $is_periodical,

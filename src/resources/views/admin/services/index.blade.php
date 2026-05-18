@@ -17,6 +17,12 @@
                 @error('name')<p class="admin-error">{{ $message }}</p>@enderror
             </div>
 
+            <div class="admin-field admin-field--span">
+                <label for="description">Описание</label>
+                <textarea id="description" name="description" rows="3" class="admin-input admin-textarea" placeholder="Краткое описание услуги для клиента">{{ old('description') }}</textarea>
+                @error('description')<p class="admin-error">{{ $message }}</p>@enderror
+            </div>
+
             <div class="admin-field">
                 <label for="price">Цена</label>
                 <input id="price" name="price" type="number" min="0" step="0.01" value="{{ old('price') }}" class="admin-input" placeholder="0.00">
@@ -60,6 +66,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Название</th>
+                        <th>Описание</th>
                         <th>Цена</th>
                         <th>Активна</th>
                         <th>Период</th>
@@ -70,9 +77,10 @@
                 </thead>
                 <tbody>
                     @forelse ($services as $service)
-                        <tr data-search="{{ $service->id }} {{ $service->name }} {{ $service->price }} {{ $service->is_active ? 'да' : 'нет' }}">
+                        <tr data-search="{{ $service->id }} {{ $service->name }} {{ $service->description }} {{ $service->price }} {{ $service->is_active ? 'да' : 'нет' }}">
                             <td>{{ $service->id }}</td>
                             <td class="name-cell">{{ $service->name }}</td>
+                            <td class="admin-cell-desc">{{ $service->description ? \Illuminate\Support\Str::limit($service->description, 80) : '—' }}</td>
                             <td>{{ $service->price ?? '—' }}</td>
                             <td>
                                 <span class="admin-badge {{ $service->is_active ? 'admin-badge--ok' : 'admin-badge--muted' }}">
@@ -92,7 +100,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="admin-empty">Услуг пока нет. Добавьте первую в форме выше.</td>
+                            <td colspan="9" class="admin-empty">Услуг пока нет. Добавьте первую в форме выше.</td>
                         </tr>
                     @endforelse
                 </tbody>

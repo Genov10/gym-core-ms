@@ -307,6 +307,23 @@ a {
     }
 }
 
+.admin-field--span {
+    grid-column: 1 / -1;
+}
+
+textarea.admin-input,
+.admin-textarea {
+    min-height: 5rem;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.admin-cell-desc {
+    max-width: 16rem;
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
 .admin-field label,
 .admin-label {
     display: block;
