@@ -42,6 +42,14 @@ return [
         'url' => env('ADMIN_BROADCAST_URL', 'http://31.131.31.247:8082/notification-by-admin'),
     ],
 
+    'one_day_pass' => [
+        'url' => env('ONE_DAY_PASS_NOTIFICATION_URL', 'http://31.131.31.247:8082/notification-to-one-day'),
+    ],
+
+    'three_days_pass' => [
+        'url' => env('THREE_DAYS_PASS_NOTIFICATION_URL', 'http://31.131.31.247:8082/notification-to-tree-days'),
+    ],
+
     'wayforpay' => (static function (): array {
         $appUrl = rtrim((string) env('APP_URL', ''), '/');
 
