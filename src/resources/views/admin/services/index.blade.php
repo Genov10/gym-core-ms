@@ -84,14 +84,13 @@
                             <td>{{ $service->is_periodical ? 'Да' : 'Нет' }}</td>
                             <td>{{ $service->day_amount ?? '—' }}</td>
                             <td>{{ $service->visit_amount ?? '—' }}</td>
-                            <td class="text-right">
+                            <td class="text-right admin-table-actions">
+                                <a href="{{ url('/admin/services/'.$service->id) }}" class="admin-btn admin-btn--ghost admin-btn--sm">Открыть</a>
                                 @if ($service->is_active)
-                                    <form method="POST" action="{{ url('/admin/services/'.$service->id.'/deactivate') }}" onsubmit="return confirm('Деактивировать услугу? Она не будет доступна для покупки.')">
+                                    <form method="POST" action="{{ url('/admin/services/'.$service->id.'/deactivate') }}" class="admin-inline-form" onsubmit="return confirm('Деактивировать услугу? Она не будет доступна для покупки.')">
                                         @csrf
                                         <button type="submit" class="admin-btn admin-btn--danger admin-btn--sm">Деактивировать</button>
                                     </form>
-                                @else
-                                    <span class="hint">—</span>
                                 @endif
                             </td>
                         </tr>

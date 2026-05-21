@@ -17,6 +17,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'is_periodical',
     'day_amount',
     'visit_amount',
+    'sales_default',
+    'sales_military_member',
+    'sales_student',
 ])]
 class GymService extends Model
 {
@@ -31,6 +34,9 @@ class GymService extends Model
             'is_periodical' => 'boolean',
             'day_amount' => 'integer',
             'visit_amount' => 'integer',
+            'sales_default' => 'integer',
+            'sales_military_member' => 'integer',
+            'sales_student' => 'integer',
         ];
     }
 

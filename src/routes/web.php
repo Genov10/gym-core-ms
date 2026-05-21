@@ -38,6 +38,8 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/services', [GymServicesController::class, 'index'])->name('admin.services.index');
         Route::post('/services', [GymServicesController::class, 'store'])->name('admin.services.store');
+        Route::get('/services/{service}', [GymServicesController::class, 'show'])->name('admin.services.show');
+        Route::put('/services/{service}', [GymServicesController::class, 'update'])->name('admin.services.update');
         Route::post('/services/{service}/deactivate', [GymServicesController::class, 'deactivate'])->name('admin.services.deactivate');
 
         Route::get('/customers', [CustomersController::class, 'index'])->name('admin.customers.index');

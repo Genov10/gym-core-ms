@@ -324,6 +324,49 @@ textarea.admin-input,
     font-size: 0.85rem;
 }
 
+.admin-table-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.admin-inline-form {
+    display: inline;
+}
+
+.admin-form-grid--service-edit {
+    display: grid;
+    gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .admin-form-grid--service-edit {
+        grid-template-columns: repeat(2, minmax(10rem, 1fr));
+    }
+
+    .admin-form-grid--sales {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(8rem, 1fr));
+        gap: 0.75rem;
+    }
+}
+
+.admin-panel--nested {
+    margin-top: 0.5rem;
+    padding: 1rem;
+    background: rgba(15, 10, 28, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    border-radius: 0.65rem;
+}
+
+.admin-panel--nested h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1rem;
+    color: #fff;
+}
+
 .admin-field label,
 .admin-label {
     display: block;
