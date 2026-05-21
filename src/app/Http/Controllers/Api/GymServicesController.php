@@ -11,7 +11,7 @@ class GymServicesController extends Controller
     {
         $services = GymService::query()
             ->orderBy('id')
-            ->get(['id', 'name', 'price', 'description', 'is_active', 'is_periodical', 'day_amount', 'visit_amount']);
+            ->get(['id', 'name', 'price', 'description', 'is_active', 'is_periodical', 'day_amount', 'visit_amount', 'sales_default', 'sales_military_member', 'sales_student']);
 
         return response()->json([
             'data' => $services,
