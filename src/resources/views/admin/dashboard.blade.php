@@ -27,6 +27,10 @@
                 <span>Посещения</span>
                 <span>→</span>
             </a>
+            <a href="{{ url('/admin/broadcasts') }}" class="admin-link-card">
+                <span>Рассылки</span>
+                <span>→</span>
+            </a>
         </section>
     </div>
 @endsection

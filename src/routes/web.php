@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\BroadcastsController;
 use App\Http\Controllers\Admin\CustomersController;
 use App\Http\Controllers\Admin\GymServicesController;
 use App\Http\Controllers\Admin\RoomsController;
@@ -50,6 +51,9 @@ Route::prefix('admin')->group(function () {
         Route::get('/sales', [SalesController::class, 'index'])->name('admin.sales.index');
 
         Route::get('/visits', [VisitsController::class, 'index'])->name('admin.visits.index');
+
+        Route::get('/broadcasts', [BroadcastsController::class, 'index'])->name('admin.broadcasts.index');
+        Route::post('/broadcasts', [BroadcastsController::class, 'send'])->name('admin.broadcasts.send');
 
         Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
     });

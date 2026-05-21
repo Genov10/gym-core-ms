@@ -38,6 +38,10 @@ return [
         'webhook_url' => env('PAYMENT_RESULT_WEBHOOK_URL', ''),
     ],
 
+    'admin_broadcast' => [
+        'url' => env('ADMIN_BROADCAST_URL', 'http://31.131.31.247:8082/notification-by-admin'),
+    ],
+
     'wayforpay' => (static function (): array {
         $appUrl = rtrim((string) env('APP_URL', ''), '/');
 

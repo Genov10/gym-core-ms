@@ -367,6 +367,15 @@ textarea.admin-input,
     color: #fff;
 }
 
+.admin-broadcast-form {
+    max-width: 40rem;
+    margin-top: 1rem;
+}
+
+.admin-broadcast-form .admin-textarea {
+    min-height: 10rem;
+}
+
 .admin-field label,
 .admin-label {
     display: block;

@@ -59,6 +59,9 @@
                     </span>
                     Посещения
                 </a>
+                <a href="{{ url('/admin/broadcasts') }}" class="{{ request()->is('admin/broadcasts*') ? 'is-active' : '' }}">
+                    <span aria-hidden="true">✉</span> Рассылки
+                </a>
             </nav>
 
             <div class="admin-sidebar__foot">
@@ -80,6 +83,7 @@
                     <a href="{{ url('/admin/customers') }}" class="{{ request()->is('admin/customers*') ? 'is-active' : '' }}">Клиенты</a>
                     <a href="{{ url('/admin/sales') }}" class="{{ request()->is('admin/sales*') ? 'is-active' : '' }}">Продажи</a>
                     <a href="{{ url('/admin/visits') }}" class="{{ request()->is('admin/visits*') ? 'is-active' : '' }}">Посещения</a>
+                    <a href="{{ url('/admin/broadcasts') }}" class="{{ request()->is('admin/broadcasts*') ? 'is-active' : '' }}">Рассылки</a>
                 </nav>
                 <h1>@yield('title', 'Admin')</h1>
                 @hasSection('subtitle')
