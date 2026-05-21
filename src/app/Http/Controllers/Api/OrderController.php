@@ -83,6 +83,18 @@ class OrderController extends Controller
             $amount = (float) $service->price;
             $currency = (string) config('services.wayforpay.currency', 'UAH');
 
+            $sale = $service->sales_default;
+            if ($customer->is_military_member) {
+                $sale = $service->sales_military_member;
+            }
+            if ($customer->is_student) {
+                $sale = $service->sales_student;
+            }
+
+
+            if ($sale > 0) {
+                $amount = ceil((float) $service->price / 100 * (100 - $sale));
+            }
             $paymentOrder = PaymentOrder::query()->create([
                 'order_reference' => 'tmp',
                 'customer_id' => $customer->id,
