@@ -29,7 +29,7 @@ class GymService extends Model
     {
         return [
             'created_at' => 'datetime',
-            'price' => 'float',
+            'price' => 'decimal:2',
             'is_active' => 'boolean',
             'is_periodical' => 'boolean',
             'day_amount' => 'integer',

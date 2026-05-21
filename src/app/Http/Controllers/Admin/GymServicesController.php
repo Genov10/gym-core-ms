@@ -32,7 +32,7 @@ class GymServicesController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
-            'price' => ['nullable', 'numeric', 'min:0'],
+            'price' => ['nullable', 'decimal:0,2', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
             'day_amount' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'visit_amount' => ['nullable', 'integer', 'min:0', 'max:1000000'],
@@ -43,7 +43,7 @@ class GymServicesController extends Controller
         GymService::query()->create([
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
-            'price' => $data['price'] ?? null,
+            'price' => $this->normalizePrice($data['price'] ?? null),
             'is_active' => (bool) ($data['is_active'] ?? false),
             'is_periodical' => $is_periodical,
             'day_amount' => $data['day_amount'] ?? null,
@@ -59,7 +59,7 @@ class GymServicesController extends Controller
         $data = $request->validate(array_merge([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
-            'price' => ['nullable', 'numeric', 'min:0'],
+            'price' => ['nullable', 'decimal:0,2', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
             'day_amount' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'visit_amount' => ['nullable', 'integer', 'min:0', 'max:1000000'],
@@ -70,7 +70,7 @@ class GymServicesController extends Controller
         $service->update([
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
-            'price' => $data['price'] ?? null,
+            'price' => $this->normalizePrice($data['price'] ?? null),
             'is_active' => (bool) ($data['is_active'] ?? false),
             'is_periodical' => $is_periodical,
             'day_amount' => $data['day_amount'] ?? null,
@@ -101,5 +101,16 @@ class GymServicesController extends Controller
             'sales_military_member' => ['required', 'integer', 'min:0', 'max:100'],
             'sales_student' => ['required', 'integer', 'min:0', 'max:100'],
         ];
+    }
+
+    private function normalizePrice(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $normalized = str_replace(',', '.', trim((string) $value));
+
+        return number_format((float) $normalized, 2, '.', '');
     }
 }

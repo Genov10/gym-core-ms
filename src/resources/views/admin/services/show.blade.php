@@ -34,7 +34,7 @@
 
             <div class="admin-field">
                 <label for="price">Цена (UAH)</label>
-                <input id="price" name="price" type="number" min="0" step="0.01" value="{{ old('price', $service->price) }}" class="admin-input">
+                <input id="price" name="price" type="number" min="0" step="1" value="{{ old('price', $service->price !== null ? (string) $service->price : '') }}" class="admin-input" inputmode="decimal">
                 @error('price')<p class="admin-error">{{ $message }}</p>@enderror
             </div>
 

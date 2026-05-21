@@ -33,7 +33,7 @@ class GymServicesController extends Controller
         }
         $finalServicesArray = [];
         foreach ($services as $service) {
-            $amount = (float) $service->price;
+            $amount = (int) $service->price;
             $currency = (string) config('services.wayforpay.currency', 'UAH');
 
             $sale = $service->sales_default;
@@ -46,14 +46,14 @@ class GymServicesController extends Controller
 
 
             if ($sale > 0) {
-                $amount = ceil((float) $service->price / 100 * (100 - $sale));
+                $amount = (int) ceil((float) $service->price / 100 * (100 - $sale));
             }
 
             $finalServicesArray[] = [
                 'id' => $service->id,
                 'name' => $service->name,
-                'price' => $service->price,
-                'sale' => $amount,
+                'price' => $amount,
+                'sale_from' => $service->price,
                 'description' => $service->description,
             ];
         }

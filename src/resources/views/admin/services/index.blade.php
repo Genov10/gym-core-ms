@@ -25,7 +25,7 @@
 
             <div class="admin-field">
                 <label for="price">Цена</label>
-                <input id="price" name="price" type="number" min="0" step="0.01" value="{{ old('price') }}" class="admin-input" placeholder="0.00">
+                <input id="price" name="price" type="number" min="0" step="1" value="{{ old('price') }}" class="admin-input" placeholder="0" inputmode="decimal">
                 @error('price')<p class="admin-error">{{ $message }}</p>@enderror
             </div>
 
