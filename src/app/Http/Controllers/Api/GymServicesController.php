@@ -53,7 +53,7 @@ class GymServicesController extends Controller
                 'id' => $service->id,
                 'name' => $service->name,
                 'price' => $amount,
-                'sale_from' => $service->price,
+                'sale_from' => (int) $service->price,
                 'description' => $service->description,
             ];
         }
