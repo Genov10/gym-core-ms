@@ -37,10 +37,10 @@ class GymServicesController extends Controller
             $currency = (string) config('services.wayforpay.currency', 'UAH');
 
             $sale = $service->sales_default;
-            if ($customer->is_military_member) {
+            if ($customer->is_military_member > 0) {
                 $sale = $service->sales_military_member;
             }
-            if ($customer->is_student) {
+            if ($customer->is_student > 0) {
                 $sale = $service->sales_student;
             }
 
