@@ -120,6 +120,21 @@ class CustomersController extends Controller
         return redirect('/admin/customers/'.$customer->id)->with('status', $message);
     }
 
+    public function updateFlags(Request $request, Customer $customer)
+    {
+        $data = $request->validate([
+            'is_military_member' => ['nullable', 'boolean'],
+            'is_student' => ['nullable', 'boolean'],
+        ]);
+
+        $customer->update([
+            'is_military_member' => (bool) ($data['is_military_member'] ?? false),
+            'is_student' => (bool) ($data['is_student'] ?? false),
+        ]);
+
+        return redirect('/admin/customers/'.$customer->id)->with('status', 'Скидочные статусы сохранены.');
+    }
+
     private function applyLikeFilter(Builder $query, string $column, string $value): void
     {
         if ($value === '') {

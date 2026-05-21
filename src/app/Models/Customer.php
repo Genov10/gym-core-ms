@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'is_num_verified',
     'email',
     'is_banned',
+    'is_military_member',
+    'is_student',
 ])]
 class Customer extends Model
 {
@@ -29,6 +31,8 @@ class Customer extends Model
             'created_at' => 'datetime',
             'is_num_verified' => 'boolean',
             'is_banned' => 'boolean',
+            'is_military_member' => 'boolean',
+            'is_student' => 'boolean',
         ];
     }
 

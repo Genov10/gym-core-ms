@@ -53,6 +53,24 @@
                     <dd>{{ $customer->created_at?->format('Y-m-d H:i') ?? '—' }}</dd>
                 </div>
             </dl>
+
+            <form method="POST" action="{{ url('/admin/customers/'.$customer->id.'/flags') }}" class="admin-customer-flags">
+                @csrf
+                @method('PUT')
+
+                <span class="admin-label">Скидочные статусы</span>
+                <div class="admin-customer-flags__checks">
+                    <label class="admin-check">
+                        <input type="checkbox" name="is_military_member" value="1" {{ old('is_military_member', $customer->is_military_member) ? 'checked' : '' }}>
+                        Военнослужащий
+                    </label>
+                    <label class="admin-check">
+                        <input type="checkbox" name="is_student" value="1" {{ old('is_student', $customer->is_student) ? 'checked' : '' }}>
+                        Студент
+                    </label>
+                </div>
+                <button type="submit" class="admin-btn admin-btn--primary">Сохранить</button>
+            </form>
         </div>
 
         @if ($telegramUrl)
