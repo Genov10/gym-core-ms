@@ -9,6 +9,7 @@ use App\Models\CustomerVisit;
 use App\Models\PaymentOrder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class CustomersController extends Controller
 {
@@ -133,6 +134,36 @@ class CustomersController extends Controller
         ]);
 
         return redirect('/admin/customers/'.$customer->id)->with('status', 'Скидочные статусы сохранены.');
+    }
+
+    public function freezeSubscription(Request $request, Customer $customer, CustomerGymService $subscription)
+    {
+        if ((int) $subscription->customer_id !== (int) $customer->id) {
+            abort(404);
+        }
+
+        $subscription->load('gymService:id,name,is_periodical');
+
+        if (! $subscription->is_active || ! $subscription->gymService?->is_periodical) {
+            return redirect('/admin/customers/'.$customer->id)
+                ->withErrors(['freeze' => 'Заморозка доступна только для активных периодических абонементов.']);
+        }
+
+        $data = $request->validate([
+            'days' => ['required', 'integer', 'min:1', 'max:365'],
+        ]);
+
+        $base = $subscription->expired_at !== null
+            ? Carbon::parse($subscription->expired_at)
+            : Carbon::now();
+
+        $subscription->expired_at = $base->copy()->addDays((int) $data['days']);
+        $subscription->save();
+
+        return redirect('/admin/customers/'.$customer->id)->with(
+            'status',
+            'Абонемент «'.($subscription->gymService?->name ?? '#'.$subscription->id).'» продлён на '.$data['days'].' дн. Действует до '.$subscription->expired_at->format('Y-m-d H:i').'.'
+        );
     }
 
     private function applyLikeFilter(Builder $query, string $column, string $value): void

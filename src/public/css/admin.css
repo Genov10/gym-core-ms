@@ -376,6 +376,46 @@ textarea.admin-input,
     min-height: 10rem;
 }
 
+.admin-freeze-details {
+    margin-top: 0.15rem;
+}
+
+.admin-freeze-details summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.admin-freeze-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.admin-freeze-form {
+    margin-top: 0.65rem;
+    padding: 0.75rem;
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    border-radius: 0.5rem;
+    background: rgba(15, 10, 28, 0.6);
+    min-width: 14rem;
+}
+
+.admin-freeze-form label {
+    display: block;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-bottom: 0.35rem;
+}
+
+.admin-freeze-form__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.admin-freeze-form__row .admin-input {
+    width: 6rem;
+}
+
 .admin-field label,
 .admin-label {
     display: block;

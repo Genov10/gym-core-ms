@@ -47,6 +47,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/customers/{customer}', [CustomersController::class, 'show'])->name('admin.customers.show');
         Route::post('/customers/{customer}/toggle-ban', [CustomersController::class, 'toggleBan'])->name('admin.customers.toggle-ban');
         Route::put('/customers/{customer}/flags', [CustomersController::class, 'updateFlags'])->name('admin.customers.update-flags');
+        Route::post('/customers/{customer}/subscriptions/{subscription}/freeze', [CustomersController::class, 'freezeSubscription'])->name('admin.customers.subscriptions.freeze');
 
         Route::get('/sales', [SalesController::class, 'index'])->name('admin.sales.index');
 

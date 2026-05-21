@@ -206,6 +206,7 @@
                             <th>Выдан</th>
                             <th>Истекает</th>
                             <th>Статус</th>
+                            <th>Действия</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -230,10 +231,42 @@
                                         {{ $sub->is_active ? 'Активен' : 'Неактивен' }}
                                     </span>
                                 </td>
+                                <td>
+                                    @if ($sub->is_active && $service?->is_periodical)
+                                        <details class="admin-freeze-details">
+                                            <summary class="admin-btn admin-btn--ghost admin-btn--sm">Заморозка абонемента</summary>
+                                            <form
+                                                method="POST"
+                                                action="{{ url('/admin/customers/'.$customer->id.'/subscriptions/'.$sub->id.'/freeze') }}"
+                                                class="admin-freeze-form"
+                                            >
+                                                @csrf
+                                                <label for="freeze-days-{{ $sub->id }}">Дней продления</label>
+                                                <div class="admin-freeze-form__row">
+                                                    <input
+                                                        id="freeze-days-{{ $sub->id }}"
+                                                        name="days"
+                                                        type="number"
+                                                        min="1"
+                                                        max="365"
+                                                        step="1"
+                                                        required
+                                                        class="admin-input"
+                                                        placeholder="Например: 7"
+                                                        value="{{ old('days') }}"
+                                                    >
+                                                    <button type="submit" class="admin-btn admin-btn--primary admin-btn--sm">Продлить</button>
+                                                </div>
+                                            </form>
+                                        </details>
+                                    @else
+                                        <span class="hint">—</span>
+                                    @endif
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="admin-empty">Абонементов нет.</td>
+                                <td colspan="10" class="admin-empty">Абонементов нет.</td>
                             </tr>
                         @endforelse
                     </tbody>
