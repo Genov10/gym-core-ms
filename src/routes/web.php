@@ -8,7 +8,10 @@ use App\Http\Controllers\Admin\RoomsController;
 use App\Http\Controllers\Admin\SalesController;
 use App\Http\Controllers\Admin\VisitsController;
 use App\Http\Controllers\PaymentResultController;
+use App\Http\Controllers\TermsController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/terms', TermsController::class)->name('terms');
 
 // WayForPay редирект після оплати (POST без CSRF — див. bootstrap/app.php)
 Route::match(['get', 'post'], '/result', PaymentResultController::class)->name('payment.result');
