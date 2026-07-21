@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'is_banned',
     'is_military_member',
     'is_student',
+    'is_guest_visit_avalable',
 ])]
 class Customer extends Model
 {
@@ -33,6 +34,7 @@ class Customer extends Model
             'is_banned' => 'boolean',
             'is_military_member' => 'boolean',
             'is_student' => 'boolean',
+            'is_guest_visit_avalable' => 'boolean',
         ];
     }
 
