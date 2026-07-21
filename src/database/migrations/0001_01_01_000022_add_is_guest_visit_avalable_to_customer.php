@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         if (Schema::hasTable('customer') && ! Schema::hasColumn('customer', 'is_guest_visit_avalable')) {
-            DB::statement('ALTER TABLE customer ADD COLUMN is_guest_visit_avalable BOOLEAN DEFAULT FALSE');
+            DB::statement('ALTER TABLE customer ADD COLUMN is_guest_visit_avalable BOOLEAN DEFAULT TRUE');
         }
     }
 
