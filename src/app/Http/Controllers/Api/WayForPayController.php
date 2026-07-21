@@ -188,36 +188,38 @@ class WayForPayController extends Controller
                 ->first();
 
             if (! $existsActive && $order->customer_id && $order->gym_service_id) {
-                $service = GymService::query()->where('id', $order->gym_service_id)->first();
-                if ($service) {
-                    $expiredAt = null;
-                    if ($service->is_periodical) {
-                        $expiredAt = Carbon::now()->addDays((int) $service->day_amount);
-                    }
+                // Срок (created_at / expired_at) стартует на первом визите — здесь только активация.
+                $pending = null;
 
-                    // Заказ мог быть создан через OrderController с «ожиданием оплаты» (is_active = 0).
+                if (! empty($order->customer_gym_service_id)) {
+                    $pending = CustomerGymService::query()
+                        ->where('id', (int) $order->customer_gym_service_id)
+                        ->where('customer_id', $order->customer_id)
+                        ->where('is_active', 0)
+                        ->first();
+                }
+
+                if (! $pending) {
                     $pending = CustomerGymService::query()
                         ->where('customer_id', $order->customer_id)
                         ->where('gym_service_id', $order->gym_service_id)
                         ->where('is_active', 0)
                         ->orderByDesc('id')
                         ->first();
+                }
 
-                    if ($pending) {
-                        $pending->is_active = true;
-                        if ($expiredAt !== null) {
-                            $pending->expired_at = $expiredAt;
-                        }
-                        $pending->save();
-                    } else {
-                        CustomerGymService::query()->create([
-                            'customer_id' => $order->customer_id,
-                            'gym_service_id' => $order->gym_service_id,
-                            'created_at' => Carbon::now(),
-                            'expired_at' => $expiredAt,
-                            'is_active' => 1,
-                        ]);
-                    }
+                if ($pending) {
+                    $pending->is_active = true;
+                    $pending->save();
+                } else {
+                    CustomerGymService::query()->create([
+                        'customer_id' => $order->customer_id,
+                        'gym_service_id' => $order->gym_service_id,
+                        'purchase_date' => Carbon::now(),
+                        'created_at' => null,
+                        'expired_at' => null,
+                        'is_active' => 1,
+                    ]);
                 }
             }
         } else {

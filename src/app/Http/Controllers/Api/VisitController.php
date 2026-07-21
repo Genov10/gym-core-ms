@@ -83,6 +83,30 @@ class VisitController extends Controller
                 }
 
                 $isPeriodical = (bool) $gymService->is_periodical;
+
+                if (! $customerGymService->created_at) {
+                    $customerGymService->created_at = Carbon::now();
+
+                    if ($isPeriodical) {
+                        $customerGymService->expired_at = Carbon::now()->addDays((int) $gymService->day_amount);
+                    }
+                    $customerGymService->save();
+                }
+
+                if ($isPeriodical && $customerGymService->expired_at && $customerGymService->expired_at->lt(Carbon::now())) {
+                    $customerGymService->is_active = false;
+                    $customerGymService->save();
+
+                    return [
+                        'status' => 400,
+                        'payload' => [
+                            'success' => false,
+                            'message' => 'Subscription expired',
+                            'code' => 4,
+                        ],
+                    ];
+                }
+
                 if (! $isPeriodical) {
                     $visitAmount = (int) $gymService->visit_amount;
                     $finished = (int) $customerGymService->finished_visits_amount;

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'order_reference',
     'customer_id',
     'gym_service_id',
+    'customer_gym_service_id',
     'amount',
     'currency',
     'status',
@@ -22,6 +23,7 @@ class PaymentOrder extends Model
         return [
             'customer_id' => 'integer',
             'gym_service_id' => 'integer',
+            'customer_gym_service_id' => 'integer',
             'amount' => 'float',
             'provider_payload' => 'array',
         ];

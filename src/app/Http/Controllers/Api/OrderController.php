@@ -68,16 +68,18 @@ class OrderController extends Controller
             if ($service->is_periodical) {
                 $is_periodical = true;
             }
+            $created_at = null;
             $expired_at = null;
-            if ($is_periodical) {
-                $expired_at = Carbon::now()->addDays($service->day_amount);
-            } 
+            // if ($is_periodical) {
+            //     $expired_at = Carbon::now()->addDays($service->day_amount);
+            // } 
             $customerGymService = CustomerGymService::query()->create([
                 'customer_id' => $customer->id,
                 'gym_service_id' => $service->id,
-                'created_at' => Carbon::now(),
+                'created_at' => $created_at,
                 'expired_at' => $expired_at,
                 'is_active' => 0,
+                'purchase_date' => Carbon::now(),
             ]);
 
             $amount = (float) $service->price;
