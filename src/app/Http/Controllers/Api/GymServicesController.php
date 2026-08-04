@@ -17,6 +17,7 @@ class GymServicesController extends Controller
         ]);
 
         $services = GymService::query()
+            ->where('is_active', true)
             ->orderBy('id')
             ->get(['id', 'name', 'price', 'description', 'is_active', 'is_periodical', 'day_amount', 'visit_amount', 'sales_default', 'sales_military_member', 'sales_student']);
 
