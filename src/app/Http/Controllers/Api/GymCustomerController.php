@@ -9,7 +9,7 @@ use App\Models\GymService;
 use App\Models\CustomerGymService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-
+use App\Providers\CustomerProvider;
 class GymCustomerController extends Controller
 {
     use ChecksCustomerBan;
@@ -101,6 +101,15 @@ class GymCustomerController extends Controller
             $services[] = [
                 'id' => $customerGymService->gymService->id,
                 'name' => $customerGymService->gymService->name,
+            ];
+        }
+
+        $isGuestVisitAvailable = CustomerProvider::isGuestVisitAvailable($customer->id);
+
+        if ($isGuestVisitAvailable == 1) {
+            $services[] = [
+                'id' => 0,
+                'name' => 'Guest visit',
             ];
         }
         return response()->json([
