@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\ChecksCustomerBan;
+use App\Providers\CustomerProvider;
 use App\Models\Customer;
 use App\Models\CustomerGymService;
 use App\Models\CustomerVisit;
@@ -51,8 +52,58 @@ class VisitController extends Controller
                 ], 400);
             }
 
+            $serviceId = (int) $data['service_id'];
+
+            if ($serviceId === 0) {
+                if (CustomerProvider::isGuestVisitAvailable((int) $customer->id) !== 1) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Guest visit not available',
+                        'code' => 4,
+                    ], 400);
+                }
+
+                $result = DB::transaction(function () use ($customer) {
+                    $locker = $this->allocateFreeLocker($customer);
+
+                    if ($locker === null) {
+                        return [
+                            'status' => 409,
+                            'payload' => [
+                                'success' => false,
+                                'message' => 'No free lockers available',
+                                'code' => 14,
+                            ],
+                        ];
+                    }
+
+                    $visit = CustomerVisit::query()->create([
+                        'customer_id' => (int) $customer->id,
+                        'gym_service_id' => 0,
+                        'start' => Carbon::now(),
+                        'locker_number' => $locker['locker_id'],
+                        'locker_room_id' => $locker['locker_room_id'],
+                        'is_finished' => 0,
+                    ]);
+
+                    return [
+                        'status' => 200,
+                        'payload' => [
+                            'success' => true,
+                            'message' => 'Visit started successfully',
+                            'code' => 0,
+                            'data' => [
+                                'visit' => base64_encode(json_encode($visit->toArray())),
+                            ],
+                        ],
+                    ];
+                });
+
+                return response()->json($result['payload'], $result['status']);
+            }
+
             $gymService = GymService::query()
-                ->where('id', (int) $data['service_id'])
+                ->where('id', $serviceId)
                 ->first();
 
             if (! $gymService) {
@@ -129,32 +180,9 @@ class VisitController extends Controller
                     }
                 }
 
-                $lockerRooms = LockerRoom::query()
-                    ->where('sex', $customer->sex)
-                    ->where('is_staff', 0)
-                    ->where('is_active', 1)
-                    ->get();
+                $locker = $this->allocateFreeLocker($customer);
 
-                $lockerRoomId = null;
-                $lockerId = null;
-
-                foreach ($lockerRooms as $room) {
-                    $lockerRoomItem = LockerRoomItem::query()
-                        ->where('locker_room_id', (int) $room->id)
-                        ->where('is_free', 1)
-                        ->lockForUpdate()
-                        ->first();
-
-                    if ($lockerRoomItem) {
-                        $lockerId = (int) $lockerRoomItem->locker_number;
-                        $lockerRoomId = (int) $room->id;
-                        $lockerRoomItem->is_free = 0;
-                        $lockerRoomItem->save();
-                        break;
-                    }
-                }
-
-                if ($lockerRoomId === null || $lockerId === null) {
+                if ($locker === null) {
                     return [
                         'status' => 409,
                         'payload' => [
@@ -178,8 +206,8 @@ class VisitController extends Controller
                     'customer_id' => (int) $customer->id,
                     'gym_service_id' => (int) $gymService->id,
                     'start' => Carbon::now(),
-                    'locker_number' => (int) $lockerId,
-                    'locker_room_id' => (int) $lockerRoomId,
+                    'locker_number' => $locker['locker_id'],
+                    'locker_room_id' => $locker['locker_room_id'],
                     'is_finished' => 0,
                 ]);
 
@@ -277,6 +305,38 @@ class VisitController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * @return array{locker_room_id: int, locker_id: int}|null
+     */
+    private function allocateFreeLocker(Customer $customer): ?array
+    {
+        $lockerRooms = LockerRoom::query()
+            ->where('sex', $customer->sex)
+            ->where('is_staff', 0)
+            ->where('is_active', 1)
+            ->get();
+
+        foreach ($lockerRooms as $room) {
+            $lockerRoomItem = LockerRoomItem::query()
+                ->where('locker_room_id', (int) $room->id)
+                ->where('is_free', 1)
+                ->lockForUpdate()
+                ->first();
+
+            if ($lockerRoomItem) {
+                $lockerRoomItem->is_free = 0;
+                $lockerRoomItem->save();
+
+                return [
+                    'locker_room_id' => (int) $room->id,
+                    'locker_id' => (int) $lockerRoomItem->locker_number,
+                ];
+            }
+        }
+
+        return null;
     }
 }
 
