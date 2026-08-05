@@ -30,12 +30,7 @@
 
     <section class="admin-panel admin-customer-header">
         <div class="admin-customer-header__main">
-            <div class="admin-customer-header__title-row">
-                <h2>{{ $displayName }}</h2>
-                <button type="button" class="admin-btn admin-btn--primary" id="sell-service-open">
-                    Продать услугу
-                </button>
-            </div>
+            <h2>{{ $displayName }}</h2>
             <dl class="admin-dl admin-dl--inline">
                 <div>
                     <dt>Телефон</dt>
@@ -74,7 +69,45 @@
                         Студент
                     </label>
                 </div>
-                <button type="submit" class="admin-btn admin-btn--primary">Сохранить</button>
+
+                <div class="admin-customer-flags__actions">
+                    <button type="submit" class="admin-btn admin-btn--primary">Сохранить</button>
+
+                    <section class="admin-inline-sell-service" aria-labelledby="sell-service-title">
+                        <div class="admin-inline-sell-service__head">
+                            <span class="admin-label" id="sell-service-title">Продать услугу</span>
+                            <span class="hint">Ссылка WayForPay как в боте</span>
+                        </div>
+
+                        <div class="admin-inline-sell-service__controls">
+                            <select id="sell-service-select" class="admin-input admin-input--select">
+                                <option value="">Загрузка…</option>
+                            </select>
+                            <button type="button" class="admin-btn admin-btn--primary" id="sell-service-generate" disabled>
+                                Создать ссылку
+                            </button>
+                        </div>
+
+                        <div id="sell-service-link-wrap" class="admin-sell-link hidden">
+                            <label class="admin-label" for="sell-service-link">Ссылка на оплату</label>
+                            <div class="admin-telegram-link__row">
+                                <input
+                                    type="text"
+                                    class="admin-input"
+                                    id="sell-service-link"
+                                    readonly
+                                    onclick="this.select()"
+                                >
+                                <button type="button" class="admin-btn admin-btn--primary" id="sell-service-copy">
+                                    Копировать
+                                </button>
+                            </div>
+                        </div>
+
+                        <p id="sell-service-status" class="hint hidden"></p>
+                        <p id="sell-service-error" class="admin-alert admin-alert--danger hidden"></p>
+                    </section>
+                </div>
             </form>
         </div>
 
@@ -327,41 +360,6 @@
         </div>
     </details>
 
-    <div id="sell-service-modal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="sell-service-title">
-        <div class="admin-modal__backdrop" id="sell-service-backdrop"></div>
-        <div class="admin-modal__panel">
-            <div class="admin-modal__head">
-                <h3 id="sell-service-title">Продать услугу</h3>
-                <button type="button" class="admin-modal__close" id="sell-service-close" aria-label="Закрыть">×</button>
-            </div>
-
-            <p class="hint">Ссылка такая же, как в боте (WayForPay). Клиент #{{ $customer->id }}.</p>
-
-            <label class="admin-label" for="sell-service-select">Услуга</label>
-            <select id="sell-service-select" class="admin-input admin-input--select">
-                <option value="">Загрузка…</option>
-            </select>
-
-            <div id="sell-service-link-wrap" class="admin-sell-link hidden">
-                <label class="admin-label" for="sell-service-link">Ссылка на оплату</label>
-                <div class="admin-telegram-link__row">
-                    <input
-                        type="text"
-                        class="admin-input"
-                        id="sell-service-link"
-                        readonly
-                        onclick="this.select()"
-                    >
-                    <button type="button" class="admin-btn admin-btn--primary" id="sell-service-copy">
-                        Копировать
-                    </button>
-                </div>
-            </div>
-
-            <p id="sell-service-status" class="hint hidden"></p>
-            <p id="sell-service-error" class="admin-alert admin-alert--danger hidden"></p>
-        </div>
-    </div>
 @endsection
 
 @push('scripts')
@@ -369,11 +367,8 @@
         (function () {
             const customerId = @json($customer->id);
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
-            const modal = document.getElementById('sell-service-modal');
-            const openBtn = document.getElementById('sell-service-open');
-            const closeBtn = document.getElementById('sell-service-close');
-            const backdrop = document.getElementById('sell-service-backdrop');
             const select = document.getElementById('sell-service-select');
+            const generateBtn = document.getElementById('sell-service-generate');
             const linkWrap = document.getElementById('sell-service-link-wrap');
             const linkInput = document.getElementById('sell-service-link');
             const copyBtn = document.getElementById('sell-service-copy');
@@ -418,6 +413,7 @@
                 resetLink();
                 select.innerHTML = '<option value="">Загрузка…</option>';
                 select.disabled = true;
+                generateBtn.disabled = true;
 
                 try {
                     const response = await fetch(`/admin/customers/${customerId}/sellable-services`, {
@@ -482,30 +478,20 @@
                 }
             }
 
-            function openModal() {
-                modal.classList.remove('hidden');
-                document.body.classList.add('admin-modal-open');
-                loadServices();
-            }
-
-            function closeModal() {
-                modal.classList.add('hidden');
-                document.body.classList.remove('admin-modal-open');
-                hideError();
-                resetLink();
-                select.value = '';
-            }
-
-            openBtn?.addEventListener('click', openModal);
-            closeBtn?.addEventListener('click', closeModal);
-            backdrop?.addEventListener('click', closeModal);
-
             select?.addEventListener('change', () => {
+                generateBtn.disabled = !select.value;
+
                 if (!select.value) {
                     resetLink();
                     hideError();
+                }
+            });
+
+            generateBtn?.addEventListener('click', () => {
+                if (!select.value) {
                     return;
                 }
+
                 generateLink(select.value);
             });
 
@@ -524,11 +510,7 @@
                 }
             });
 
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
-                    closeModal();
-                }
-            });
+            loadServices();
         })();
     </script>
 @endpush
