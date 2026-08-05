@@ -109,7 +109,7 @@ class GymCustomerController extends Controller
         if ($isGuestVisitAvailable == 1) {
             $services[] = [
                 'id' => 0,
-                'name' => 'Guest visit',
+                'name' => 'Гостевий візит',
             ];
         }
         return response()->json([
