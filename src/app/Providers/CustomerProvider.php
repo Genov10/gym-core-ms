@@ -1,32 +1,24 @@
 <?php
 
 namespace App\Providers;
-use Illuminate\Support\ServiceProvider;
+
 use App\Models\Customer;
 use App\Models\CustomerVisit;
+use Illuminate\Support\ServiceProvider;
 
 class CustomerProvider extends ServiceProvider
 {
-    
-
-    public function getCustomerIdByTelegramId(int $telegramId): int
+    public static function getCustomerIdByTelegramId(int $telegramId): int
     {
         return Customer::query()->where('telegram_id', $telegramId)->first()->id;
     }
 
-    public function isGuestVisitAvailable(int $customerId): int
+    public static function isGuestVisitAvailable(int $customerId): int
     {
-        
-        $customerVisits = CustomerVisit::query()
-        ->where('customer_id', (int) $customer->id)
-        ->get();
+        $hasVisits = CustomerVisit::query()
+            ->where('customer_id', $customerId)
+            ->exists();
 
-        if (empty($customerVisits)) {
-            return 1;
-        }
-        return 0;
-    
+        return $hasVisits ? 0 : 1;
     }
-
-        
 }
