@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\CustomerGymService;
 use App\Models\CustomerVisit;
 use App\Models\PaymentOrder;
+use App\Services\CustomerPurchaseService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -164,6 +165,39 @@ class CustomersController extends Controller
             'status',
             'Абонемент «'.($subscription->gymService?->name ?? '#'.$subscription->id).'» продлён на '.$data['days'].' дн. Действует до '.$subscription->expired_at->format('Y-m-d H:i').'.'
         );
+    }
+
+    public function sellableServices(Customer $customer, CustomerPurchaseService $customerPurchaseService)
+    {
+        return response()->json([
+            'data' => $customerPurchaseService->listPricedServices($customer, excludeOwned: true),
+        ]);
+    }
+
+    public function createPaymentLink(Request $request, Customer $customer, CustomerPurchaseService $customerPurchaseService)
+    {
+        $data = $request->validate([
+            'service_id' => ['required', 'integer'],
+        ]);
+
+        $result = $customerPurchaseService->createPaymentLink(
+            $customer,
+            (int) $data['service_id'],
+            skipBanCheck: true,
+        );
+
+        if (! $result['success']) {
+            return response()->json([
+                'success' => false,
+                'message' => $result['message'],
+            ], $result['httpStatus']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'url' => $result['url'],
+            'orderReference' => $result['orderReference'],
+        ]);
     }
 
     private function applyLikeFilter(Builder $query, string $column, string $value): void

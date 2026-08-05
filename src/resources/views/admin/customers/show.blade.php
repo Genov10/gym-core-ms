@@ -30,7 +30,12 @@
 
     <section class="admin-panel admin-customer-header">
         <div class="admin-customer-header__main">
-            <h2>{{ $displayName }}</h2>
+            <div class="admin-customer-header__title-row">
+                <h2>{{ $displayName }}</h2>
+                <button type="button" class="admin-btn admin-btn--primary" id="sell-service-open">
+                    Продать услугу
+                </button>
+            </div>
             <dl class="admin-dl admin-dl--inline">
                 <div>
                     <dt>Телефон</dt>
@@ -321,4 +326,209 @@
             </div>
         </div>
     </details>
+
+    <div id="sell-service-modal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="sell-service-title">
+        <div class="admin-modal__backdrop" id="sell-service-backdrop"></div>
+        <div class="admin-modal__panel">
+            <div class="admin-modal__head">
+                <h3 id="sell-service-title">Продать услугу</h3>
+                <button type="button" class="admin-modal__close" id="sell-service-close" aria-label="Закрыть">×</button>
+            </div>
+
+            <p class="hint">Ссылка такая же, как в боте (WayForPay). Клиент #{{ $customer->id }}.</p>
+
+            <label class="admin-label" for="sell-service-select">Услуга</label>
+            <select id="sell-service-select" class="admin-input admin-input--select">
+                <option value="">Загрузка…</option>
+            </select>
+
+            <div id="sell-service-link-wrap" class="admin-sell-link hidden">
+                <label class="admin-label" for="sell-service-link">Ссылка на оплату</label>
+                <div class="admin-telegram-link__row">
+                    <input
+                        type="text"
+                        class="admin-input"
+                        id="sell-service-link"
+                        readonly
+                        onclick="this.select()"
+                    >
+                    <button type="button" class="admin-btn admin-btn--primary" id="sell-service-copy">
+                        Копировать
+                    </button>
+                </div>
+            </div>
+
+            <p id="sell-service-status" class="hint hidden"></p>
+            <p id="sell-service-error" class="admin-alert admin-alert--danger hidden"></p>
+        </div>
+    </div>
 @endsection
+
+@push('scripts')
+    <script>
+        (function () {
+            const customerId = @json($customer->id);
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+            const modal = document.getElementById('sell-service-modal');
+            const openBtn = document.getElementById('sell-service-open');
+            const closeBtn = document.getElementById('sell-service-close');
+            const backdrop = document.getElementById('sell-service-backdrop');
+            const select = document.getElementById('sell-service-select');
+            const linkWrap = document.getElementById('sell-service-link-wrap');
+            const linkInput = document.getElementById('sell-service-link');
+            const copyBtn = document.getElementById('sell-service-copy');
+            const statusEl = document.getElementById('sell-service-status');
+            const errorEl = document.getElementById('sell-service-error');
+
+            function hideError() {
+                errorEl.textContent = '';
+                errorEl.classList.add('hidden');
+            }
+
+            function showError(message) {
+                errorEl.textContent = message;
+                errorEl.classList.remove('hidden');
+            }
+
+            function setStatus(message) {
+                if (!message) {
+                    statusEl.textContent = '';
+                    statusEl.classList.add('hidden');
+                    return;
+                }
+                statusEl.textContent = message;
+                statusEl.classList.remove('hidden');
+            }
+
+            function resetLink() {
+                linkInput.value = '';
+                linkWrap.classList.add('hidden');
+                setStatus('');
+            }
+
+            function formatServiceLabel(service) {
+                if (service.price < service.sale_from) {
+                    return `${service.name} — ${service.price} UAH (было ${service.sale_from})`;
+                }
+                return `${service.name} — ${service.price} UAH`;
+            }
+
+            async function loadServices() {
+                hideError();
+                resetLink();
+                select.innerHTML = '<option value="">Загрузка…</option>';
+                select.disabled = true;
+
+                try {
+                    const response = await fetch(`/admin/customers/${customerId}/sellable-services`, {
+                        headers: { Accept: 'application/json' },
+                    });
+
+                    const payload = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(payload.message || 'Не удалось загрузить услуги');
+                    }
+
+                    const services = payload.data ?? [];
+
+                    if (services.length === 0) {
+                        select.innerHTML = '<option value="">Нет доступных услуг</option>';
+                        return;
+                    }
+
+                    select.innerHTML = '<option value="">Выберите услугу</option>';
+                    services.forEach((service) => {
+                        const option = document.createElement('option');
+                        option.value = String(service.id);
+                        option.textContent = formatServiceLabel(service);
+                        select.appendChild(option);
+                    });
+                    select.disabled = false;
+                } catch (error) {
+                    select.innerHTML = '<option value="">Ошибка загрузки</option>';
+                    showError(error.message || 'Ошибка загрузки услуг');
+                }
+            }
+
+            async function generateLink(serviceId) {
+                hideError();
+                resetLink();
+                setStatus('Генерация ссылки…');
+
+                try {
+                    const response = await fetch(`/admin/customers/${customerId}/payment-link`, {
+                        method: 'POST',
+                        headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: JSON.stringify({ service_id: Number(serviceId) }),
+                    });
+
+                    const payload = await response.json();
+
+                    if (!response.ok || !payload.success) {
+                        throw new Error(payload.message || 'Не удалось создать ссылку');
+                    }
+
+                    linkInput.value = payload.url;
+                    linkWrap.classList.remove('hidden');
+                    setStatus(`Заказ: ${payload.orderReference}`);
+                } catch (error) {
+                    setStatus('');
+                    showError(error.message || 'Не удалось создать ссылку');
+                }
+            }
+
+            function openModal() {
+                modal.classList.remove('hidden');
+                document.body.classList.add('admin-modal-open');
+                loadServices();
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                document.body.classList.remove('admin-modal-open');
+                hideError();
+                resetLink();
+                select.value = '';
+            }
+
+            openBtn?.addEventListener('click', openModal);
+            closeBtn?.addEventListener('click', closeModal);
+            backdrop?.addEventListener('click', closeModal);
+
+            select?.addEventListener('change', () => {
+                if (!select.value) {
+                    resetLink();
+                    hideError();
+                    return;
+                }
+                generateLink(select.value);
+            });
+
+            copyBtn?.addEventListener('click', async () => {
+                if (!linkInput.value) {
+                    return;
+                }
+
+                try {
+                    await navigator.clipboard.writeText(linkInput.value);
+                    setStatus('Ссылка скопирована');
+                } catch (error) {
+                    linkInput.select();
+                    document.execCommand('copy');
+                    setStatus('Ссылка скопирована');
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    closeModal();
+                }
+            });
+        })();
+    </script>
+@endpush
