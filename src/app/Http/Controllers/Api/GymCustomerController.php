@@ -112,6 +112,14 @@ class GymCustomerController extends Controller
                 'name' => 'Гостевий візит',
             ];
         }
+
+        $isStaff = $customer->is_staff;
+        if ($isStaff) {
+            $services[] = [
+                'id' => -1,
+                'name' => 'Персонал',
+            ];
+        }
         return response()->json([
             'success' => true,
             'message' => 'Customer gym services fetched successfully',
