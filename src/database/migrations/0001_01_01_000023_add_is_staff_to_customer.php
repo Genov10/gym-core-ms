@@ -8,15 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable('customer') && ! Schema::hasColumn('customer', 'is_guest_visit_avalable')) {
-            DB::statement('ALTER TABLE customer ADD COLUMN is_guest_visit_avalable BOOLEAN DEFAULT TRUE');
+        if (Schema::hasTable('customer') && ! Schema::hasColumn('customer', 'is_staff')) {
+            DB::statement('ALTER TABLE customer ADD COLUMN is_staff BOOLEAN DEFAULT FALSE');
         }
     }
 
     public function down(): void
     {
-        if (Schema::hasTable('customer') && Schema::hasColumn('customer', 'is_guest_visit_avalable')) {
-            DB::statement('ALTER TABLE customer DROP COLUMN is_guest_visit_avalable');
+        if (Schema::hasTable('customer') && Schema::hasColumn('customer', 'is_staff')) {
+            DB::statement('ALTER TABLE customer DROP COLUMN is_staff');
         }
     }
 };
