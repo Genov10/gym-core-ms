@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CustomersController;
 use App\Http\Controllers\Admin\GymServicesController;
 use App\Http\Controllers\Admin\RoomsController;
 use App\Http\Controllers\Admin\SalesController;
+use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\VisitsController;
 use App\Http\Controllers\PaymentResultController;
 use App\Http\Controllers\TermsController;
@@ -49,10 +50,14 @@ Route::prefix('admin')->group(function () {
         Route::get('/customers', [CustomersController::class, 'index'])->name('admin.customers.index');
         Route::get('/customers/{customer}', [CustomersController::class, 'show'])->name('admin.customers.show');
         Route::post('/customers/{customer}/toggle-ban', [CustomersController::class, 'toggleBan'])->name('admin.customers.toggle-ban');
+        Route::post('/customers/{customer}/toggle-staff', [CustomersController::class, 'toggleStaff'])->name('admin.customers.toggle-staff');
         Route::put('/customers/{customer}/flags', [CustomersController::class, 'updateFlags'])->name('admin.customers.update-flags');
         Route::post('/customers/{customer}/subscriptions/{subscription}/freeze', [CustomersController::class, 'freezeSubscription'])->name('admin.customers.subscriptions.freeze');
         Route::get('/customers/{customer}/sellable-services', [CustomersController::class, 'sellableServices'])->name('admin.customers.sellable-services');
         Route::post('/customers/{customer}/payment-link', [CustomersController::class, 'createPaymentLink'])->name('admin.customers.payment-link');
+
+        Route::get('/staff', [StaffController::class, 'index'])->name('admin.staff.index');
+        Route::get('/staff/{customer}', [StaffController::class, 'show'])->name('admin.staff.show');
 
         Route::get('/sales', [SalesController::class, 'index'])->name('admin.sales.index');
 

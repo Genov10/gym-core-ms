@@ -1,11 +1,13 @@
 @extends('admin.layout')
 
 @section('title', $displayName)
-@section('subtitle', 'Клиент #'.$customer->id)
+@section('subtitle', ($listMode === 'staff' ? 'Сотрудник #' : 'Клиент #').$customer->id)
 
 @section('content')
     <p class="admin-back">
-        <a href="{{ url('/admin/customers') }}" class="admin-btn admin-btn--ghost">← К списку клиентов</a>
+        <a href="{{ $listBaseUrl }}" class="admin-btn admin-btn--ghost">
+            ← {{ $listMode === 'staff' ? 'К списку персонала' : 'К списку клиентов' }}
+        </a>
     </p>
 
     @if ($customer->is_banned)
@@ -15,17 +17,39 @@
         </div>
     @endif
 
+    @if ($customer->is_staff)
+        <div class="admin-alert">
+            <strong>В персонале</strong>
+            <span>is_staff = true — отображается в разделе «Персонал».</span>
+        </div>
+    @endif
+
     <section class="admin-panel admin-customer-actions">
-        <form method="POST" action="{{ url('/admin/customers/'.$customer->id.'/toggle-ban') }}">
-            @csrf
-            @if ($customer->is_banned)
-                <button type="submit" class="admin-btn admin-btn--primary">Разблокировать</button>
-            @else
-                <button type="submit" class="admin-btn admin-btn--danger" onclick="return confirm('Заблокировать клиента? Он не сможет пользоваться API.')">
-                    Заблокировать
-                </button>
-            @endif
-        </form>
+        <div class="admin-customer-actions__row">
+            <form method="POST" action="{{ url('/admin/customers/'.$customer->id.'/toggle-ban') }}">
+                @csrf
+                @if ($customer->is_banned)
+                    <button type="submit" class="admin-btn admin-btn--primary">Разблокировать</button>
+                @else
+                    <button type="submit" class="admin-btn admin-btn--danger" onclick="return confirm('Заблокировать клиента? Он не сможет пользоваться API.')">
+                        Заблокировать
+                    </button>
+                @endif
+            </form>
+
+            <form method="POST" action="{{ url('/admin/customers/'.$customer->id.'/toggle-staff') }}">
+                @csrf
+                @if ($customer->is_staff)
+                    <button type="submit" class="admin-btn admin-btn--ghost" onclick="return confirm('Убрать из персонала?')">
+                        Убрать из персонала
+                    </button>
+                @else
+                    <button type="submit" class="admin-btn admin-btn--primary">
+                        Добавить в персонал
+                    </button>
+                @endif
+            </form>
+        </div>
     </section>
 
     <section class="admin-panel admin-customer-header">

@@ -40,6 +40,17 @@
                     </span>
                     Клиенты
                 </a>
+                <a href="{{ url('/admin/staff') }}" class="{{ request()->is('admin/staff*') ? 'is-active' : '' }}">
+                    <span class="admin-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </span>
+                    Персонал
+                </a>
                 <a href="{{ url('/admin/sales') }}" class="{{ request()->is('admin/sales*') ? 'is-active' : '' }}">
                     <span class="admin-nav-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -82,6 +93,7 @@
                     <a href="{{ url('/admin/rooms') }}" class="{{ request()->is('admin/rooms*') ? 'is-active' : '' }}">Раздевалки</a>
                     <a href="{{ url('/admin/services') }}" class="{{ request()->is('admin/services*') ? 'is-active' : '' }}">Услуги</a>
                     <a href="{{ url('/admin/customers') }}" class="{{ request()->is('admin/customers*') ? 'is-active' : '' }}">Клиенты</a>
+                    <a href="{{ url('/admin/staff') }}" class="{{ request()->is('admin/staff*') ? 'is-active' : '' }}">Персонал</a>
                     <a href="{{ url('/admin/sales') }}" class="{{ request()->is('admin/sales*') ? 'is-active' : '' }}">Продажи</a>
                     <a href="{{ url('/admin/visits') }}" class="{{ request()->is('admin/visits*') ? 'is-active' : '' }}">Посещения</a>
                     <a href="{{ url('/admin/broadcasts') }}" class="{{ request()->is('admin/broadcasts*') ? 'is-active' : '' }}">Рассылки</a>

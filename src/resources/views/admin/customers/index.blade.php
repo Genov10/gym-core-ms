@@ -1,17 +1,17 @@
 @extends('admin.layout')
 
-@section('title', 'Клиенты')
-@section('subtitle', 'Список зарегистрированных клиентов (таблица customers)')
+@section('title', $listTitle)
+@section('subtitle', $listSubtitle)
 
 @section('content')
     <section class="admin-panel">
         <div class="admin-toolbar admin-toolbar--stack">
             <div>
-                <h2>Клиенты</h2>
+                <h2>{{ $listTitle }}</h2>
                 <p class="hint">Показано: {{ $customers->count() }}</p>
             </div>
 
-            <form method="GET" action="{{ url('/admin/customers') }}" class="admin-filters admin-filters--customers">
+            <form method="GET" action="{{ $listBaseUrl }}" class="admin-filters admin-filters--customers">
                 <div class="admin-field">
                     <label for="name">Имя</label>
                     <input
@@ -91,7 +91,7 @@
                 <div class="admin-filter-actions">
                     <button type="submit" class="admin-btn admin-btn--primary">Применить</button>
                     @if (collect($filters)->filter()->isNotEmpty())
-                        <a href="{{ url('/admin/customers') }}" class="admin-btn admin-btn--ghost">Сбросить</a>
+                        <a href="{{ $listBaseUrl }}" class="admin-btn admin-btn--ghost">Сбросить</a>
                     @endif
                 </div>
             </form>
@@ -148,16 +148,16 @@
                             </td>
                             <td style="color:#94a3b8;white-space:nowrap">{{ $customer->created_at?->format('Y-m-d H:i') ?? '—' }}</td>
                             <td class="text-right">
-                                <a href="{{ url('/admin/customers/'.$customer->id) }}" class="admin-btn admin-btn--ghost">Открыть</a>
+                                <a href="{{ $profileBaseUrl.'/'.$customer->id }}" class="admin-btn admin-btn--ghost">Открыть</a>
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="12" class="admin-empty">
                                 @if (collect($filters)->filter()->isNotEmpty())
-                                    По заданным фильтрам клиентов не найдено.
+                                    По заданным фильтрам {{ $emptyLabel }} не найдено.
                                 @else
-                                    Клиентов пока нет.
+                                    {{ ucfirst($emptyLabel) }} пока нет.
                                 @endif
                             </td>
                         </tr>

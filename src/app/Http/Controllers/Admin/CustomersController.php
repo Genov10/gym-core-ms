@@ -24,7 +24,11 @@ class CustomersController extends Controller
             'identity' => trim((string) $request->query('identity', '')),
         ];
 
-        $query = Customer::query()->orderByDesc('id');
+        $query = Customer::query()
+            ->where(function (Builder $q): void {
+                $q->where('is_staff', false)->orWhereNull('is_staff');
+            })
+            ->orderByDesc('id');
 
         $this->applyLikeFilter($query, 'name', $filters['name']);
         $this->applyLikeFilter($query, 'lastname', $filters['lastname']);
@@ -40,11 +44,20 @@ class CustomersController extends Controller
         return view('admin.customers.index', [
             'customers' => $customers,
             'filters' => $filters,
+            'listMode' => 'customers',
+            'listTitle' => 'Клиенты',
+            'listSubtitle' => 'Список зарегистрированных клиентов (is_staff = false)',
+            'listBaseUrl' => url('/admin/customers'),
+            'emptyLabel' => 'клиентов',
+            'profileBaseUrl' => url('/admin/customers'),
         ]);
     }
 
-    public function show(Customer $customer)
+    public function show(Customer $customer, string $listMode = 'customers')
     {
+        if ($listMode === 'customers' && $customer->is_staff) {
+            return redirect('/admin/staff/'.$customer->id);
+        }
         $activeVisit = CustomerVisit::query()
             ->where('customer_id', $customer->id)
             ->where('is_finished', false)
@@ -97,6 +110,8 @@ class CustomersController extends Controller
 
         $displayName = trim(($customer->name ?? '').' '.($customer->lastname ?? '')) ?: 'Клиент #'.$customer->id;
 
+        $listMode = $customer->is_staff ? 'staff' : $listMode;
+
         return view('admin.customers.show', [
             'customer' => $customer,
             'displayName' => $displayName,
@@ -107,6 +122,9 @@ class CustomersController extends Controller
             'subscriptions' => $subscriptions,
             'visits' => $visits,
             'telegramUrl' => $telegramUrl,
+            'listMode' => $listMode,
+            'listBaseUrl' => $listMode === 'staff' ? url('/admin/staff') : url('/admin/customers'),
+            'profileBaseUrl' => $listMode === 'staff' ? url('/admin/staff') : url('/admin/customers'),
         ]);
     }
 
@@ -119,7 +137,19 @@ class CustomersController extends Controller
             ? 'Клиент заблокирован.'
             : 'Блокировка снята.';
 
-        return redirect('/admin/customers/'.$customer->id)->with('status', $message);
+        return redirect($this->profileUrl($customer))->with('status', $message);
+    }
+
+    public function toggleStaff(Customer $customer)
+    {
+        $customer->is_staff = ! (bool) $customer->is_staff;
+        $customer->save();
+
+        if ($customer->is_staff) {
+            return redirect('/admin/staff/'.$customer->id)->with('status', 'Добавлен в персонал.');
+        }
+
+        return redirect('/admin/customers/'.$customer->id)->with('status', 'Убран из персонала.');
     }
 
     public function updateFlags(Request $request, Customer $customer)
@@ -134,7 +164,7 @@ class CustomersController extends Controller
             'is_student' => (bool) ($data['is_student'] ?? false),
         ]);
 
-        return redirect('/admin/customers/'.$customer->id)->with('status', 'Скидочные статусы сохранены.');
+        return redirect($this->profileUrl($customer))->with('status', 'Скидочные статусы сохранены.');
     }
 
     public function freezeSubscription(Request $request, Customer $customer, CustomerGymService $subscription)
@@ -146,7 +176,7 @@ class CustomersController extends Controller
         $subscription->load('gymService:id,name,is_periodical');
 
         if (! $subscription->is_active || ! $subscription->gymService?->is_periodical) {
-            return redirect('/admin/customers/'.$customer->id)
+            return redirect($this->profileUrl($customer))
                 ->withErrors(['freeze' => 'Заморозка доступна только для активных периодических абонементов.']);
         }
 
@@ -161,7 +191,7 @@ class CustomersController extends Controller
         $subscription->expired_at = $base->copy()->addDays((int) $data['days']);
         $subscription->save();
 
-        return redirect('/admin/customers/'.$customer->id)->with(
+        return redirect($this->profileUrl($customer))->with(
             'status',
             'Абонемент «'.($subscription->gymService?->name ?? '#'.$subscription->id).'» продлён на '.$data['days'].' дн. Действует до '.$subscription->expired_at->format('Y-m-d H:i').'.'
         );
@@ -239,5 +269,12 @@ class CustomersController extends Controller
     private function escapeLike(string $value): string
     {
         return addcslashes($value, '%_\\');
+    }
+
+    private function profileUrl(Customer $customer): string
+    {
+        return $customer->is_staff
+            ? '/admin/staff/'.$customer->id
+            : '/admin/customers/'.$customer->id;
     }
 }
