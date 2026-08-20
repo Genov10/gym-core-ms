@@ -1,23 +1,26 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable('customer') && ! Schema::hasColumn('customer', 'is_staff')) {
-            DB::statement('ALTER TABLE customer ADD COLUMN is_staff BOOLEAN DEFAULT FALSE');
+        if (Schema::hasTable('customers') && ! Schema::hasColumn('customers', 'is_staff')) {
+            Schema::table('customers', function (Blueprint $table) {
+                $table->boolean('is_staff')->default(false);
+            });
         }
     }
 
     public function down(): void
     {
-        if (Schema::hasTable('customer') && Schema::hasColumn('customer', 'is_staff')) {
-            DB::statement('ALTER TABLE customer DROP COLUMN is_staff');
+        if (Schema::hasTable('customers') && Schema::hasColumn('customers', 'is_staff')) {
+            Schema::table('customers', function (Blueprint $table) {
+                $table->dropColumn('is_staff');
+            });
         }
     }
 };
-
