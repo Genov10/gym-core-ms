@@ -43,6 +43,37 @@ class VisitController extends Controller
                 return $banResponse;
             }
 
+            $serviceId = (int) $data['service_id'];
+
+            // Staff pass: only is_staff check, no lockers / services / unfinished-visit gates.
+            if ($serviceId === -1) {
+                if (! $customer->is_staff) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Staff visit not available',
+                        'code' => 4,
+                    ], 400);
+                }
+
+                $visit = CustomerVisit::query()->create([
+                    'customer_id' => (int) $customer->id,
+                    'gym_service_id' => -1,
+                    'start' => Carbon::now(),
+                    'locker_number' => null,
+                    'locker_room_id' => null,
+                    'is_finished' => 0,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Visit started successfully',
+                    'code' => 0,
+                    'data' => [
+                        'visit' => base64_encode(json_encode($visit->toArray())),
+                    ],
+                ], 200);
+            }
+
             $notFinishedVisit = CustomerVisit::query()->where('customer_id', $customer->id)->where('is_finished', 0)->first();
             if ($notFinishedVisit) {
                 return response()->json([
@@ -51,8 +82,6 @@ class VisitController extends Controller
                     'code' => 15,
                 ], 400);
             }
-
-            $serviceId = (int) $data['service_id'];
 
             if ($serviceId === 0) {
                 if (CustomerProvider::isGuestVisitAvailable((int) $customer->id) !== 1) {
@@ -63,21 +92,7 @@ class VisitController extends Controller
                     ], 400);
                 }
 
-                $result = $this->startSpecialVisit($customer, gymServiceId: 0, forStaffLocker: false);
-
-                return response()->json($result['payload'], $result['status']);
-            }
-
-            if ($serviceId === -1) {
-                if (! $customer->is_staff) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Staff visit not available',
-                        'code' => 4,
-                    ], 400);
-                }
-
-                $result = $this->startSpecialVisit($customer, gymServiceId: -1, forStaffLocker: true);
+                $result = $this->startSpecialVisit($customer, gymServiceId: 0);
 
                 return response()->json($result['payload'], $result['status']);
             }
@@ -290,10 +305,10 @@ class VisitController extends Controller
     /**
      * @return array{status: int, payload: array<string, mixed>}
      */
-    private function startSpecialVisit(Customer $customer, int $gymServiceId, bool $forStaffLocker): array
+    private function startSpecialVisit(Customer $customer, int $gymServiceId): array
     {
-        return DB::transaction(function () use ($customer, $gymServiceId, $forStaffLocker) {
-            $locker = $this->allocateFreeLocker($customer, $forStaffLocker);
+        return DB::transaction(function () use ($customer, $gymServiceId) {
+            $locker = $this->allocateFreeLocker($customer);
 
             if ($locker === null) {
                 return [
@@ -332,11 +347,11 @@ class VisitController extends Controller
     /**
      * @return array{locker_room_id: int, locker_id: int}|null
      */
-    private function allocateFreeLocker(Customer $customer, bool $forStaff = false): ?array
+    private function allocateFreeLocker(Customer $customer): ?array
     {
         $lockerRooms = LockerRoom::query()
             ->where('sex', $customer->sex)
-            ->where('is_staff', $forStaff ? 1 : 0)
+            ->where('is_staff', 0)
             ->where('is_active', 1)
             ->get();
 
