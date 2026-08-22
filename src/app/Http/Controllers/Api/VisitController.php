@@ -63,41 +63,21 @@ class VisitController extends Controller
                     ], 400);
                 }
 
-                $result = DB::transaction(function () use ($customer) {
-                    $locker = $this->allocateFreeLocker($customer);
+                $result = $this->startSpecialVisit($customer, gymServiceId: 0, forStaffLocker: false);
 
-                    if ($locker === null) {
-                        return [
-                            'status' => 409,
-                            'payload' => [
-                                'success' => false,
-                                'message' => 'No free lockers available',
-                                'code' => 14,
-                            ],
-                        ];
-                    }
+                return response()->json($result['payload'], $result['status']);
+            }
 
-                    $visit = CustomerVisit::query()->create([
-                        'customer_id' => (int) $customer->id,
-                        'gym_service_id' => 0,
-                        'start' => Carbon::now(),
-                        'locker_number' => $locker['locker_id'],
-                        'locker_room_id' => $locker['locker_room_id'],
-                        'is_finished' => 0,
-                    ]);
+            if ($serviceId === -1) {
+                if (! $customer->is_staff) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Staff visit not available',
+                        'code' => 4,
+                    ], 400);
+                }
 
-                    return [
-                        'status' => 200,
-                        'payload' => [
-                            'success' => true,
-                            'message' => 'Visit started successfully',
-                            'code' => 0,
-                            'data' => [
-                                'visit' => base64_encode(json_encode($visit->toArray())),
-                            ],
-                        ],
-                    ];
-                });
+                $result = $this->startSpecialVisit($customer, gymServiceId: -1, forStaffLocker: true);
 
                 return response()->json($result['payload'], $result['status']);
             }
@@ -308,13 +288,55 @@ class VisitController extends Controller
     }
 
     /**
+     * @return array{status: int, payload: array<string, mixed>}
+     */
+    private function startSpecialVisit(Customer $customer, int $gymServiceId, bool $forStaffLocker): array
+    {
+        return DB::transaction(function () use ($customer, $gymServiceId, $forStaffLocker) {
+            $locker = $this->allocateFreeLocker($customer, $forStaffLocker);
+
+            if ($locker === null) {
+                return [
+                    'status' => 409,
+                    'payload' => [
+                        'success' => false,
+                        'message' => 'No free lockers available',
+                        'code' => 14,
+                    ],
+                ];
+            }
+
+            $visit = CustomerVisit::query()->create([
+                'customer_id' => (int) $customer->id,
+                'gym_service_id' => $gymServiceId,
+                'start' => Carbon::now(),
+                'locker_number' => $locker['locker_id'],
+                'locker_room_id' => $locker['locker_room_id'],
+                'is_finished' => 0,
+            ]);
+
+            return [
+                'status' => 200,
+                'payload' => [
+                    'success' => true,
+                    'message' => 'Visit started successfully',
+                    'code' => 0,
+                    'data' => [
+                        'visit' => base64_encode(json_encode($visit->toArray())),
+                    ],
+                ],
+            ];
+        });
+    }
+
+    /**
      * @return array{locker_room_id: int, locker_id: int}|null
      */
-    private function allocateFreeLocker(Customer $customer): ?array
+    private function allocateFreeLocker(Customer $customer, bool $forStaff = false): ?array
     {
         $lockerRooms = LockerRoom::query()
             ->where('sex', $customer->sex)
-            ->where('is_staff', 0)
+            ->where('is_staff', $forStaff ? 1 : 0)
             ->where('is_active', 1)
             ->get();
 
