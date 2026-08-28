@@ -50,6 +50,10 @@ return [
         'url' => env('THREE_DAYS_PASS_NOTIFICATION_URL', 'http://31.131.31.247:8082/notification-to-tree-days'),
     ],
 
+    'unclosed_visit' => [
+        'url' => env('UNCLOSED_VISIT_NOTIFICATION_URL', 'http://31.131.31.247:8082/notification-unclosed-visit'),
+    ],
+
     'wayforpay' => (static function (): array {
         $appUrl = rtrim((string) env('APP_URL', ''), '/');
 

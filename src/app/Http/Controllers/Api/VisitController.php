@@ -11,6 +11,7 @@ use App\Models\CustomerVisit;
 use App\Models\GymService;
 use App\Models\LockerRoom;
 use App\Models\LockerRoomItem;
+use App\Services\PassExpiryWebhookNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -374,6 +375,40 @@ class VisitController extends Controller
         }
 
         return null;
+    }
+
+    public function finishForgottenVisit(Request $request, PassExpiryWebhookNotifier $notifier)
+    {
+        $customerVisits = CustomerVisit::query()
+            ->where('is_finished', 0)
+            ->where('start', '<', Carbon::now()->subHours(2))
+            ->with('customer:id,telegram_id')
+            ->get();
+
+        $telegramIds = $customerVisits
+            ->map(fn (CustomerVisit $visit) => $visit->customer)
+            ->filter(fn ($customer) => $customer && $customer->telegram_id)
+            ->map(fn ($customer) => (int) $customer->telegram_id)
+            ->filter(fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        $notificationSent = false;
+        if ($telegramIds !== []) {
+            $notificationSent = $notifier->notify($telegramIds, 'unclosed_visit');
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Forgotten visits finished successfully',
+            'code' => 0,
+            'data' => [
+                'telegram_ids' => $telegramIds,
+                'count' => count($telegramIds),
+                'notification_sent' => $notificationSent,
+            ],
+        ], 200);
     }
 }
 

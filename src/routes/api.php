@@ -15,6 +15,7 @@ Route::get('/gym-order-create', [OrderController::class, 'create']);
 Route::get('/gym-start-visit', [VisitController::class, 'startVisit']);
 Route::get('/gym-finish-visit', [VisitController::class, 'finishVisit']);
 Route::get('/gym-get-customer-gym-services', [GymCustomerController::class, 'getCustomerGymServices']);
+Route::get('/finish-forgotten-visits', [VisitController::class, 'finishForgottenVisit']);
 
 Route::get('/check-passes-for-one-day', [PassExpiryController::class, 'checkPassesForOneDay']);
 Route::get('/check-passes-for-three-days', [PassExpiryController::class, 'checkPassesForThreeDays']);
