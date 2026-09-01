@@ -231,17 +231,33 @@ class VisitController extends Controller
     }
 
 
-    public function finishVisitsPeriodically(Request $request) {
-        $customerVisits = CustomerVisit::query()->where('is_finished', 0)->where('start', '<', Carbon::now()->today())->get();
+    public function finishVisitsPeriodically(Request $request)
+    {
+        $customerVisits = CustomerVisit::query()
+            ->where('is_finished', false)
+            ->whereDate('start', Carbon::today())
+            ->get();
+
+        $finishedCount = 0;
+
         foreach ($customerVisits as $visit) {
-            $visit->finish = Carbon::now();
-            $visit->is_finished = 1;
-            $visit->save();
+            DB::transaction(function () use ($visit): void {
+                $visit->finish = Carbon::now();
+                $visit->is_finished = true;
+                $visit->save();
+
+            });
+
+            $finishedCount++;
         }
+
         return response()->json([
             'success' => true,
             'message' => 'Visits finished successfully',
             'code' => 0,
+            'data' => [
+                'finished_count' => $finishedCount,
+            ],
         ], 200);
     }
 
