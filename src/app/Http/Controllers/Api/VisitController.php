@@ -75,14 +75,14 @@ class VisitController extends Controller
                 ], 200);
             }
 
-            // $notFinishedVisit = CustomerVisit::query()->where('customer_id', $customer->id)->where('is_finished', 0)->first();
-            // if ($notFinishedVisit) {
-            //     return response()->json([
-            //         'success' => false,
-            //         'message' => 'Customer already has a not finished visit',
-            //         'code' => 15,
-            //     ], 400);
-            // }
+            $notFinishedVisit = CustomerVisit::query()->where('customer_id', $customer->id)->where('is_finished', 0)->whereDate('start', Carbon::today())->get();
+            if ($notFinishedVisit->count() > 3) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Customer already has more than 3 not finished visits',
+                    'code' => 15,
+                ], 400);
+            }
 
             if ($serviceId === 0) {
                 if (CustomerProvider::isGuestVisitAvailable((int) $customer->id) !== 1) {
