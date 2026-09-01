@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerGymService;
 use App\Models\CustomerVisit;
+use App\Models\GymService;
 use App\Models\PaymentOrder;
 use App\Services\CustomerPurchaseService;
 use Illuminate\Database\Eloquent\Builder;
@@ -228,6 +229,51 @@ class CustomersController extends Controller
             'url' => $result['url'],
             'orderReference' => $result['orderReference'],
         ]);
+    }
+
+    public function grantSubscription(Request $request, Customer $customer)
+    {
+        $data = $request->validate([
+            'service_id' => ['required', 'integer'],
+        ]);
+
+        $serviceId = (int) $data['service_id'];
+
+        $service = GymService::query()
+            ->where('id', $serviceId)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $service) {
+            return redirect($this->profileUrl($customer))
+                ->withErrors(['grant' => 'Услуга не найдена или неактивна.']);
+        }
+
+        $alreadyActive = CustomerGymService::query()
+            ->where('customer_id', $customer->id)
+            ->where('gym_service_id', $serviceId)
+            ->where('is_active', 1)
+            ->exists();
+
+        if ($alreadyActive) {
+            return redirect($this->profileUrl($customer))
+                ->withErrors(['grant' => 'У клиента уже есть активный абонемент на эту услугу.']);
+        }
+
+        CustomerGymService::query()->create([
+            'customer_id' => $customer->id,
+            'gym_service_id' => $serviceId,
+            'purchase_date' => Carbon::now(),
+            'created_at' => null,
+            'expired_at' => null,
+            'is_active' => 1,
+            'finished_visits_amount' => 0,
+        ]);
+
+        return redirect($this->profileUrl($customer))->with(
+            'status',
+            'Абонемент «'.$service->name.'» добавлен без оплаты.'
+        );
     }
 
     private function applyLikeFilter(Builder $query, string $column, string $value): void

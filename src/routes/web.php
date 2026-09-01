@@ -55,6 +55,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/customers/{customer}/subscriptions/{subscription}/freeze', [CustomersController::class, 'freezeSubscription'])->name('admin.customers.subscriptions.freeze');
         Route::get('/customers/{customer}/sellable-services', [CustomersController::class, 'sellableServices'])->name('admin.customers.sellable-services');
         Route::post('/customers/{customer}/payment-link', [CustomersController::class, 'createPaymentLink'])->name('admin.customers.payment-link');
+        Route::post('/customers/{customer}/grant-subscription', [CustomersController::class, 'grantSubscription'])->name('admin.customers.grant-subscription');
 
         Route::get('/staff', [StaffController::class, 'index'])->name('admin.staff.index');
         Route::get('/staff/{customer}', [StaffController::class, 'show'])->name('admin.staff.show');

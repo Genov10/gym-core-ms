@@ -78,25 +78,27 @@
                 </div>
             </dl>
 
-            <form method="POST" action="{{ url('/admin/customers/'.$customer->id.'/flags') }}" class="admin-customer-flags">
-                @csrf
-                @method('PUT')
+            <div class="admin-customer-flags">
+                <form method="POST" action="{{ url('/admin/customers/'.$customer->id.'/flags') }}">
+                    @csrf
+                    @method('PUT')
 
-                <span class="admin-label">Скидочные статусы</span>
-                <div class="admin-customer-flags__checks">
-                    <label class="admin-check">
-                        <input type="checkbox" name="is_military_member" value="1" {{ old('is_military_member', $customer->is_military_member) ? 'checked' : '' }}>
-                        Военнослужащий
-                    </label>
-                    <label class="admin-check">
-                        <input type="checkbox" name="is_student" value="1" {{ old('is_student', $customer->is_student) ? 'checked' : '' }}>
-                        Студент
-                    </label>
-                </div>
+                    <span class="admin-label">Скидочные статусы</span>
+                    <div class="admin-customer-flags__checks">
+                        <label class="admin-check">
+                            <input type="checkbox" name="is_military_member" value="1" {{ old('is_military_member', $customer->is_military_member) ? 'checked' : '' }}>
+                            Военнослужащий
+                        </label>
+                        <label class="admin-check">
+                            <input type="checkbox" name="is_student" value="1" {{ old('is_student', $customer->is_student) ? 'checked' : '' }}>
+                            Студент
+                        </label>
+                    </div>
 
-                <div class="admin-customer-flags__actions">
                     <button type="submit" class="admin-btn admin-btn--primary">Сохранить</button>
+                </form>
 
+                <div class="admin-customer-service-tools">
                     <section class="admin-inline-sell-service" aria-labelledby="sell-service-title">
                         <div class="admin-inline-sell-service__head">
                             <span class="admin-label" id="sell-service-title">Продать услугу</span>
@@ -131,8 +133,39 @@
                         <p id="sell-service-status" class="hint hidden"></p>
                         <p id="sell-service-error" class="admin-alert admin-alert--danger hidden"></p>
                     </section>
+
+                    <section class="admin-inline-sell-service" aria-labelledby="grant-subscription-title">
+                        <div class="admin-inline-sell-service__head">
+                            <span class="admin-label" id="grant-subscription-title">Добавить абонемент</span>
+                            <span class="hint">Оплата вне системы (терминал, наличные)</span>
+                        </div>
+
+                        <form
+                            method="POST"
+                            action="{{ url('/admin/customers/'.$customer->id.'/grant-subscription') }}"
+                            class="admin-inline-sell-service__controls"
+                            onsubmit="return confirm('Добавить абонемент без онлайн-оплаты?')"
+                        >
+                            @csrf
+                            <select
+                                id="grant-service-select"
+                                name="service_id"
+                                class="admin-input admin-input--select"
+                                required
+                            >
+                                <option value="">Загрузка…</option>
+                            </select>
+                            <button type="submit" class="admin-btn admin-btn--primary" id="grant-service-submit" disabled>
+                                Добавить
+                            </button>
+                        </form>
+
+                        @if ($errors->has('grant'))
+                            <p class="admin-alert admin-alert--danger">{{ $errors->first('grant') }}</p>
+                        @endif
+                    </section>
                 </div>
-            </form>
+            </div>
         </div>
 
         @if ($telegramUrl)
@@ -392,6 +425,8 @@
             const customerId = @json($customer->id);
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
             const select = document.getElementById('sell-service-select');
+            const grantSelect = document.getElementById('grant-service-select');
+            const grantSubmitBtn = document.getElementById('grant-service-submit');
             const generateBtn = document.getElementById('sell-service-generate');
             const linkWrap = document.getElementById('sell-service-link-wrap');
             const linkInput = document.getElementById('sell-service-link');
@@ -432,12 +467,41 @@
                 return `${service.name} — ${service.price} UAH`;
             }
 
+            function fillServiceSelect(targetSelect, services, placeholder) {
+                if (!targetSelect) {
+                    return;
+                }
+
+                if (services.length === 0) {
+                    targetSelect.innerHTML = '<option value="">Нет доступных услуг</option>';
+                    targetSelect.disabled = true;
+                    return;
+                }
+
+                targetSelect.innerHTML = `<option value="">${placeholder}</option>`;
+                services.forEach((service) => {
+                    const option = document.createElement('option');
+                    option.value = String(service.id);
+                    option.textContent = formatServiceLabel(service);
+                    targetSelect.appendChild(option);
+                });
+                targetSelect.disabled = false;
+            }
+
             async function loadServices() {
                 hideError();
                 resetLink();
                 select.innerHTML = '<option value="">Загрузка…</option>';
                 select.disabled = true;
                 generateBtn.disabled = true;
+
+                if (grantSelect) {
+                    grantSelect.innerHTML = '<option value="">Загрузка…</option>';
+                    grantSelect.disabled = true;
+                }
+                if (grantSubmitBtn) {
+                    grantSubmitBtn.disabled = true;
+                }
 
                 try {
                     const response = await fetch(`/admin/customers/${customerId}/sellable-services`, {
@@ -452,21 +516,17 @@
 
                     const services = payload.data ?? [];
 
-                    if (services.length === 0) {
-                        select.innerHTML = '<option value="">Нет доступных услуг</option>';
-                        return;
-                    }
+                    fillServiceSelect(select, services, 'Выберите услугу');
+                    fillServiceSelect(grantSelect, services, 'Выберите абонемент');
 
-                    select.innerHTML = '<option value="">Выберите услугу</option>';
-                    services.forEach((service) => {
-                        const option = document.createElement('option');
-                        option.value = String(service.id);
-                        option.textContent = formatServiceLabel(service);
-                        select.appendChild(option);
-                    });
-                    select.disabled = false;
+                    if (grantSubmitBtn) {
+                        grantSubmitBtn.disabled = services.length === 0;
+                    }
                 } catch (error) {
                     select.innerHTML = '<option value="">Ошибка загрузки</option>';
+                    if (grantSelect) {
+                        grantSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+                    }
                     showError(error.message || 'Ошибка загрузки услуг');
                 }
             }
