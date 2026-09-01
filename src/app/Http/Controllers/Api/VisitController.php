@@ -75,14 +75,14 @@ class VisitController extends Controller
                 ], 200);
             }
 
-            $notFinishedVisit = CustomerVisit::query()->where('customer_id', $customer->id)->where('is_finished', 0)->first();
-            if ($notFinishedVisit) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Customer already has a not finished visit',
-                    'code' => 15,
-                ], 400);
-            }
+            // $notFinishedVisit = CustomerVisit::query()->where('customer_id', $customer->id)->where('is_finished', 0)->first();
+            // if ($notFinishedVisit) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => 'Customer already has a not finished visit',
+            //         'code' => 15,
+            //     ], 400);
+            // }
 
             if ($serviceId === 0) {
                 if (CustomerProvider::isGuestVisitAvailable((int) $customer->id) !== 1) {
@@ -176,18 +176,18 @@ class VisitController extends Controller
                     }
                 }
 
-                $locker = $this->allocateFreeLocker($customer);
+                // $locker = $this->allocateFreeLocker($customer);
 
-                if ($locker === null) {
-                    return [
-                        'status' => 409,
-                        'payload' => [
-                            'success' => false,
-                            'message' => 'No free lockers available',
-                            'code' => 14,
-                        ],
-                    ];
-                }
+                // if ($locker === null) {
+                //     return [
+                //         'status' => 409,
+                //         'payload' => [
+                //             'success' => false,
+                //             'message' => 'No free lockers available',
+                //             'code' => 14,
+                //         ],
+                //     ];
+                // }
 
                 $customerGymService->finished_visits_amount = (int) $customerGymService->finished_visits_amount + 1;
                 $customerGymService->save();
@@ -202,8 +202,8 @@ class VisitController extends Controller
                     'customer_id' => (int) $customer->id,
                     'gym_service_id' => (int) $gymService->id,
                     'start' => Carbon::now(),
-                    'locker_number' => $locker['locker_id'],
-                    'locker_room_id' => $locker['locker_room_id'],
+                    'locker_number' => null,
+                    'locker_room_id' => null,
                     'is_finished' => 0,
                 ]);
 
