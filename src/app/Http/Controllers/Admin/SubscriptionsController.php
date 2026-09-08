@@ -21,12 +21,16 @@ class SubscriptionsController extends Controller
         $serviceIdRaw = trim((string) $request->query('service_id', ''));
         $serviceId = ctype_digit($serviceIdRaw) ? (int) $serviceIdRaw : 0;
 
+        $visitsRaw = trim((string) $request->query('visits', ''));
+        $visitsFilter = preg_match('/^\d+$/', $visitsRaw) ? (int) $visitsRaw : null;
+
         $filters = [
             'customer' => trim((string) $request->query('customer', '')),
             'date_from' => trim((string) $request->query('date_from', '')),
             'date_to' => trim((string) $request->query('date_to', '')),
             'type' => $typeFilter,
             'service_id' => $serviceId,
+            'visits' => $visitsFilter,
             'is_active' => $request->has('filtered')
                 ? $request->boolean('is_active')
                 : true,
@@ -70,6 +74,10 @@ class SubscriptionsController extends Controller
             $query->where('gym_service_id', $filters['service_id']);
         }
 
+        if ($filters['visits'] !== null) {
+            $query->where('finished_visits_amount', $filters['visits']);
+        }
+
         $subscriptions = $query->get();
 
         $services = GymService::query()
@@ -86,6 +94,7 @@ class SubscriptionsController extends Controller
                 'date_to' => $dateTo ?? '',
                 'type' => $filters['type'],
                 'service_id' => $filters['service_id'],
+                'visits' => $filters['visits'],
                 'is_active' => $filters['is_active'],
             ],
         ]);

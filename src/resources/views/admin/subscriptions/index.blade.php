@@ -81,6 +81,21 @@
                 </div>
 
                 <div class="admin-field">
+                    <label for="visits">Визитов</label>
+                    <input
+                        id="visits"
+                        name="visits"
+                        type="number"
+                        min="0"
+                        step="1"
+                        class="admin-input"
+                        value="{{ $filters['visits'] === null ? '' : $filters['visits'] }}"
+                        placeholder="Все"
+                        autocomplete="off"
+                    >
+                </div>
+
+                <div class="admin-field">
                     <label class="admin-check" style="margin-top:1.55rem">
                         <input
                             type="checkbox"
