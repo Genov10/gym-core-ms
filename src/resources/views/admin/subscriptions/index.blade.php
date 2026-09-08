@@ -69,6 +69,18 @@
                 </div>
 
                 <div class="admin-field">
+                    <label for="service_id">Вид услуги</label>
+                    <select id="service_id" name="service_id" class="admin-input">
+                        <option value="" @selected((int) $filters['service_id'] === 0)>Все</option>
+                        @foreach ($services as $service)
+                            <option value="{{ $service->id }}" @selected((int) $filters['service_id'] === (int) $service->id)>
+                                {{ $service->name }}@if (! $service->is_active) (неактивна)@endif
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="admin-field">
                     <label class="admin-check" style="margin-top:1.55rem">
                         <input
                             type="checkbox"

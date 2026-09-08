@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CustomerGymService;
+use App\Models\GymService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -17,11 +18,15 @@ class SubscriptionsController extends Controller
             $typeFilter = '';
         }
 
+        $serviceIdRaw = trim((string) $request->query('service_id', ''));
+        $serviceId = ctype_digit($serviceIdRaw) ? (int) $serviceIdRaw : 0;
+
         $filters = [
             'customer' => trim((string) $request->query('customer', '')),
             'date_from' => trim((string) $request->query('date_from', '')),
             'date_to' => trim((string) $request->query('date_to', '')),
             'type' => $typeFilter,
+            'service_id' => $serviceId,
             'is_active' => $request->has('filtered')
                 ? $request->boolean('is_active')
                 : true,
@@ -61,16 +66,26 @@ class SubscriptionsController extends Controller
             $query->whereHas('gymService', fn (Builder $q) => $q->where('is_periodical', false));
         }
 
+        if ($filters['service_id'] > 0) {
+            $query->where('gym_service_id', $filters['service_id']);
+        }
+
         $subscriptions = $query->get();
+
+        $services = GymService::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'is_active', 'is_periodical']);
 
         return view('admin.subscriptions.index', [
             'subscriptions' => $subscriptions,
             'foundCount' => $subscriptions->count(),
+            'services' => $services,
             'filters' => [
                 'customer' => $filters['customer'],
                 'date_from' => $dateFrom ?? '',
                 'date_to' => $dateTo ?? '',
                 'type' => $filters['type'],
+                'service_id' => $filters['service_id'],
                 'is_active' => $filters['is_active'],
             ],
         ]);
