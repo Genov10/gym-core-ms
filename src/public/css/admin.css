@@ -838,6 +838,30 @@ select.admin-input {
     min-width: 12rem;
 }
 
+.admin-field--visits {
+    min-width: 0 !important;
+    width: auto;
+}
+
+.admin-visits-range {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.admin-visits-range .admin-input {
+    width: 4.5rem;
+    min-width: 4.5rem;
+    flex: 0 0 4.5rem;
+}
+
+.admin-visits-range span {
+    color: #64748b;
+    font-weight: 600;
+    flex: 0 0 auto;
+}
+
 .admin-date-presets {
     display: flex;
     flex-wrap: wrap;

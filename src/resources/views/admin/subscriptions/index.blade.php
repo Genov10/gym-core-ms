@@ -80,9 +80,9 @@
                     </select>
                 </div>
 
-                <div class="admin-field">
+                <div class="admin-field admin-field--visits">
                     <label>Посещений</label>
-                    <div class="admin-date-range">
+                    <div class="admin-visits-range">
                         <input
                             id="visits_from"
                             name="visits_from"
@@ -94,7 +94,7 @@
                             placeholder="от"
                             autocomplete="off"
                         >
-                        <span class="admin-date-range__sep" aria-hidden="true">—</span>
+                        <span aria-hidden="true">—</span>
                         <input
                             id="visits_to"
                             name="visits_to"
