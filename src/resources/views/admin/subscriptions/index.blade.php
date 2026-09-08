@@ -81,18 +81,32 @@
                 </div>
 
                 <div class="admin-field">
-                    <label for="visits">Визитов</label>
-                    <input
-                        id="visits"
-                        name="visits"
-                        type="number"
-                        min="0"
-                        step="1"
-                        class="admin-input"
-                        value="{{ $filters['visits'] === null ? '' : $filters['visits'] }}"
-                        placeholder="Все"
-                        autocomplete="off"
-                    >
+                    <label>Посещений</label>
+                    <div class="admin-date-range">
+                        <input
+                            id="visits_from"
+                            name="visits_from"
+                            type="number"
+                            min="0"
+                            step="1"
+                            class="admin-input"
+                            value="{{ $filters['visits_from'] === null ? '' : $filters['visits_from'] }}"
+                            placeholder="от"
+                            autocomplete="off"
+                        >
+                        <span class="admin-date-range__sep" aria-hidden="true">—</span>
+                        <input
+                            id="visits_to"
+                            name="visits_to"
+                            type="number"
+                            min="0"
+                            step="1"
+                            class="admin-input"
+                            value="{{ $filters['visits_to'] === null ? '' : $filters['visits_to'] }}"
+                            placeholder="до"
+                            autocomplete="off"
+                        >
+                    </div>
                 </div>
 
                 <div class="admin-field">

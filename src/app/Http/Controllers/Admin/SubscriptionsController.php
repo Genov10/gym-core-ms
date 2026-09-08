@@ -21,8 +21,14 @@ class SubscriptionsController extends Controller
         $serviceIdRaw = trim((string) $request->query('service_id', ''));
         $serviceId = ctype_digit($serviceIdRaw) ? (int) $serviceIdRaw : 0;
 
-        $visitsRaw = trim((string) $request->query('visits', ''));
-        $visitsFilter = preg_match('/^\d+$/', $visitsRaw) ? (int) $visitsRaw : null;
+        $visitsFromRaw = trim((string) $request->query('visits_from', ''));
+        $visitsToRaw = trim((string) $request->query('visits_to', ''));
+        $visitsFrom = preg_match('/^\d+$/', $visitsFromRaw) ? (int) $visitsFromRaw : null;
+        $visitsTo = preg_match('/^\d+$/', $visitsToRaw) ? (int) $visitsToRaw : null;
+
+        if ($visitsFrom !== null && $visitsTo !== null && $visitsFrom > $visitsTo) {
+            [$visitsFrom, $visitsTo] = [$visitsTo, $visitsFrom];
+        }
 
         $filters = [
             'customer' => trim((string) $request->query('customer', '')),
@@ -30,7 +36,8 @@ class SubscriptionsController extends Controller
             'date_to' => trim((string) $request->query('date_to', '')),
             'type' => $typeFilter,
             'service_id' => $serviceId,
-            'visits' => $visitsFilter,
+            'visits_from' => $visitsFrom,
+            'visits_to' => $visitsTo,
             'is_active' => $request->has('filtered')
                 ? $request->boolean('is_active')
                 : true,
@@ -74,8 +81,12 @@ class SubscriptionsController extends Controller
             $query->where('gym_service_id', $filters['service_id']);
         }
 
-        if ($filters['visits'] !== null) {
-            $query->where('finished_visits_amount', $filters['visits']);
+        if ($filters['visits_from'] !== null) {
+            $query->where('finished_visits_amount', '>=', $filters['visits_from']);
+        }
+
+        if ($filters['visits_to'] !== null) {
+            $query->where('finished_visits_amount', '<=', $filters['visits_to']);
         }
 
         $subscriptions = $query->get();
@@ -94,7 +105,8 @@ class SubscriptionsController extends Controller
                 'date_to' => $dateTo ?? '',
                 'type' => $filters['type'],
                 'service_id' => $filters['service_id'],
-                'visits' => $filters['visits'],
+                'visits_from' => $filters['visits_from'],
+                'visits_to' => $filters['visits_to'],
                 'is_active' => $filters['is_active'],
             ],
         ]);
