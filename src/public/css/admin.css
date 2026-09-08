@@ -591,6 +591,21 @@ textarea.admin-input,
 }
 
 /* Table */
+.admin-result-count {
+    margin: 0 0 0.85rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.65rem;
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    background: rgba(15, 10, 28, 0.55);
+    color: #cbd5e1;
+    font-size: 0.9rem;
+}
+
+.admin-result-count strong {
+    color: #fff;
+    font-weight: 600;
+}
+
 .admin-table-wrap {
     overflow-x: auto;
     border-radius: 0.75rem;

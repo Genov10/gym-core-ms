@@ -63,6 +63,17 @@
                     </span>
                     Продажи
                 </a>
+                <a href="{{ url('/admin/subscriptions') }}" class="{{ request()->is('admin/subscriptions*') ? 'is-active' : '' }}">
+                    <span class="admin-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="16" rx="2"/>
+                            <path d="M7 8h10"/>
+                            <path d="M7 12h10"/>
+                            <path d="M7 16h6"/>
+                        </svg>
+                    </span>
+                    Абонементы
+                </a>
                 <a href="{{ url('/admin/visits') }}" class="{{ request()->is('admin/visits*') ? 'is-active' : '' }}">
                     <span class="admin-nav-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -95,6 +106,7 @@
                     <a href="{{ url('/admin/customers') }}" class="{{ request()->is('admin/customers*') ? 'is-active' : '' }}">Клиенты</a>
                     <a href="{{ url('/admin/staff') }}" class="{{ request()->is('admin/staff*') ? 'is-active' : '' }}">Персонал</a>
                     <a href="{{ url('/admin/sales') }}" class="{{ request()->is('admin/sales*') ? 'is-active' : '' }}">Продажи</a>
+                    <a href="{{ url('/admin/subscriptions') }}" class="{{ request()->is('admin/subscriptions*') ? 'is-active' : '' }}">Абонементы</a>
                     <a href="{{ url('/admin/visits') }}" class="{{ request()->is('admin/visits*') ? 'is-active' : '' }}">Посещения</a>
                     <a href="{{ url('/admin/broadcasts') }}" class="{{ request()->is('admin/broadcasts*') ? 'is-active' : '' }}">Рассылки</a>
                 </nav>

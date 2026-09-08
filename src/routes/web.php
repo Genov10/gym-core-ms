@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\GymServicesController;
 use App\Http\Controllers\Admin\RoomsController;
 use App\Http\Controllers\Admin\SalesController;
 use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\SubscriptionsController;
 use App\Http\Controllers\Admin\VisitsController;
 use App\Http\Controllers\PaymentResultController;
 use App\Http\Controllers\TermsController;
@@ -61,6 +62,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/staff/{customer}', [StaffController::class, 'show'])->name('admin.staff.show');
 
         Route::get('/sales', [SalesController::class, 'index'])->name('admin.sales.index');
+
+        Route::get('/subscriptions', [SubscriptionsController::class, 'index'])->name('admin.subscriptions.index');
 
         Route::get('/visits', [VisitsController::class, 'index'])->name('admin.visits.index');
 
