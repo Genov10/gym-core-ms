@@ -1192,6 +1192,11 @@ body.admin-login {
     margin-top: 0.75rem;
 }
 
+.admin-grant-gift-check {
+    display: inline-flex;
+    margin-top: 0.75rem;
+}
+
 @media (min-width: 720px) {
     .admin-inline-sell-service__controls {
         grid-template-columns: minmax(0, 1fr) auto;

@@ -235,9 +235,11 @@ class CustomersController extends Controller
     {
         $data = $request->validate([
             'service_id' => ['required', 'integer'],
+            'is_gift' => ['nullable', 'boolean'],
         ]);
 
         $serviceId = (int) $data['service_id'];
+        $isGift = (bool) ($data['is_gift'] ?? false);
 
         $service = GymService::query()
             ->where('id', $serviceId)
@@ -260,7 +262,7 @@ class CustomersController extends Controller
                 ->withErrors(['grant' => 'У клиента уже есть активный абонемент на эту услугу.']);
         }
 
-        CustomerGymService::query()->create([
+        $subscription = CustomerGymService::query()->create([
             'customer_id' => $customer->id,
             'gym_service_id' => $serviceId,
             'purchase_date' => Carbon::now(),
@@ -270,9 +272,31 @@ class CustomersController extends Controller
             'finished_visits_amount' => 0,
         ]);
 
+        if ($isGift) {
+            $currency = (string) config('services.wayforpay.currency', 'UAH');
+            $paymentOrder = PaymentOrder::query()->create([
+                'order_reference' => 'tmp',
+                'customer_id' => $customer->id,
+                'gym_service_id' => $serviceId,
+                'customer_gym_service_id' => $subscription->id,
+                'amount' => 0,
+                'currency' => $currency,
+                'status' => 'approved',
+                'provider_payload' => [
+                    'source' => 'admin_gift',
+                    'granted_at' => Carbon::now()->toIso8601String(),
+                ],
+            ]);
+
+            $paymentOrder->order_reference = 'gift_'.$paymentOrder->id.'_'.time();
+            $paymentOrder->save();
+        }
+
         return redirect($this->profileUrl($customer))->with(
             'status',
-            'Абонемент «'.$service->name.'» добавлен без оплаты.'
+            $isGift
+                ? 'Подарочный абонемент «'.$service->name.'» добавлен за 0 UAH.'
+                : 'Абонемент «'.$service->name.'» добавлен без онлайн-оплаты.'
         );
     }
 

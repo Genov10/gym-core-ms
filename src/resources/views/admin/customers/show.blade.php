@@ -143,21 +143,28 @@
                         <form
                             method="POST"
                             action="{{ url('/admin/customers/'.$customer->id.'/grant-subscription') }}"
-                            class="admin-inline-sell-service__controls"
-                            onsubmit="return confirm('Добавить абонемент без онлайн-оплаты?')"
+                            id="grant-subscription-form"
                         >
                             @csrf
-                            <select
-                                id="grant-service-select"
-                                name="service_id"
-                                class="admin-input admin-input--select"
-                                required
-                            >
-                                <option value="">Загрузка…</option>
-                            </select>
-                            <button type="submit" class="admin-btn admin-btn--primary" id="grant-service-submit" disabled>
-                                Добавить
-                            </button>
+                            <div class="admin-inline-sell-service__controls">
+                                <select
+                                    id="grant-service-select"
+                                    name="service_id"
+                                    class="admin-input admin-input--select"
+                                    required
+                                >
+                                    <option value="">Загрузка…</option>
+                                </select>
+                                <button type="submit" class="admin-btn admin-btn--primary" id="grant-service-submit" disabled>
+                                    Добавить
+                                </button>
+                            </div>
+
+                            <label class="admin-check admin-grant-gift-check">
+                                <input type="checkbox" name="is_gift" value="1" id="grant-is-gift">
+                                Подарочный
+                            </label>
+                            <p class="hint">Если отмечено — абонемент добавляется бесплатно (0 UAH).</p>
                         </form>
 
                         @if ($errors->has('grant'))
@@ -591,6 +598,17 @@
                     linkInput.select();
                     document.execCommand('copy');
                     setStatus('Ссылка скопирована');
+                }
+            });
+
+            document.getElementById('grant-subscription-form')?.addEventListener('submit', (event) => {
+                const isGift = document.getElementById('grant-is-gift')?.checked;
+                const message = isGift
+                    ? 'Добавить подарочный абонемент за 0 UAH?'
+                    : 'Добавить абонемент без онлайн-оплаты?';
+
+                if (!confirm(message)) {
+                    event.preventDefault();
                 }
             });
 
