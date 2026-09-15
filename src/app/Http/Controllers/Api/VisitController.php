@@ -340,44 +340,30 @@ class VisitController extends Controller
      */
     private function startSpecialVisit(Customer $customer, int $gymServiceId): array
     {
-        return DB::transaction(function () use ($customer, $gymServiceId) {
-            $locker = $this->allocateFreeLocker($customer);
+        $visit = CustomerVisit::query()->create([
+            'customer_id' => (int) $customer->id,
+            'gym_service_id' => $gymServiceId,
+            'start' => Carbon::now(),
+            'locker_number' => null,
+            'locker_room_id' => null,
+            'is_finished' => 0,
+        ]);
 
-            if ($locker === null) {
-                return [
-                    'status' => 409,
-                    'payload' => [
-                        'success' => false,
-                        'message' => 'No free lockers available',
-                        'code' => 14,
-                    ],
-                ];
-            }
-
-            $visit = CustomerVisit::query()->create([
-                'customer_id' => (int) $customer->id,
-                'gym_service_id' => $gymServiceId,
-                'start' => Carbon::now(),
-                'locker_number' => $locker['locker_id'],
-                'locker_room_id' => $locker['locker_room_id'],
-                'is_finished' => 0,
-            ]);
-
-            return [
-                'status' => 200,
-                'payload' => [
-                    'success' => true,
-                    'message' => 'Visit started successfully',
-                    'code' => 0,
-                    'data' => [
-                        'visit' => base64_encode(json_encode($visit->toArray())),
-                    ],
+        return [
+            'status' => 200,
+            'payload' => [
+                'success' => true,
+                'message' => 'Visit started successfully',
+                'code' => 0,
+                'data' => [
+                    'visit' => base64_encode(json_encode($visit->toArray())),
                 ],
-            ];
-        });
+            ],
+        ];
     }
 
     /**
+     * @deprecated Locker allocation is no longer used by startVisit flows.
      * @return array{locker_room_id: int, locker_id: int}|null
      */
     private function allocateFreeLocker(Customer $customer): ?array
