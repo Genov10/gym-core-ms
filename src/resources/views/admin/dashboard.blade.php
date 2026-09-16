@@ -7,10 +7,6 @@
     <div class="admin-cards">
         <section class="admin-panel">
             <h2>Разделы</h2>
-            <a href="{{ url('/admin/rooms') }}" class="admin-link-card">
-                <span>Раздевалки и шкафчики</span>
-                <span>→</span>
-            </a>
             <a href="{{ url('/admin/services') }}" class="admin-link-card">
                 <span>Услуги и абонементы</span>
                 <span>→</span>
