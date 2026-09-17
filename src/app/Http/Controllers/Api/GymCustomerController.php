@@ -152,9 +152,65 @@ class GymCustomerController extends Controller
             return $banResponse;
         }
 
+        $serviceId = (int) $data['service_id'];
+
+        // Guest visit (virtual service id = 0)
+        if ($serviceId === 0) {
+            if (CustomerProvider::isGuestVisitAvailable((int) $customer->id) !== 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Guest visit not available',
+                    'code' => 4,
+                ], 400);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Customer gym service info fetched successfully',
+                'code' => 0,
+                'data' => [
+                    'service_name' => 'Гостьовий візит',
+                    'description' => null,
+                    'date_from' => null,
+                    'date_to' => null,
+                    'lefted_visits_amount' => null,
+                    'can_be_frosen' => false,
+                    'can_be_extended' => false,
+                    'can_buy_with_discount' => false,
+                ],
+            ], 200);
+        }
+
+        // Staff entry (virtual service id = -1)
+        if ($serviceId === -1) {
+            if (! $customer->is_staff) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Staff visit not available',
+                    'code' => 4,
+                ], 400);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Customer gym service info fetched successfully',
+                'code' => 0,
+                'data' => [
+                    'service_name' => 'Персонал',
+                    'description' => null,
+                    'date_from' => null,
+                    'date_to' => null,
+                    'lefted_visits_amount' => null,
+                    'can_be_frosen' => false,
+                    'can_be_extended' => false,
+                    'can_buy_with_discount' => false,
+                ],
+            ], 200);
+        }
+
         $subscription = CustomerGymService::query()
             ->where('customer_id', (int) $customer->id)
-            ->where('gym_service_id', (int) $data['service_id'])
+            ->where('gym_service_id', $serviceId)
             ->where('is_active', 1)
             ->with('gymService:id,name,description,is_periodical,visit_amount,day_amount,freeze_day_amount')
             ->orderByDesc('id')
