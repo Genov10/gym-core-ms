@@ -127,5 +127,72 @@ class GymCustomerController extends Controller
             'data' => $services,
         ], 200);
     }
+
+    public function getCustomerGymServiceInfo(Request $request)
+    {
+        $data = $request->validate([
+            'telegram_id' => ['required', 'integer'],
+            'service_id' => ['required', 'integer'],
+        ]);
+
+        $customer = Customer::query()
+            ->where('telegram_id', (int) $data['telegram_id'])
+            ->first();
+
+        if (! $customer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found',
+                'code' => 4,
+            ], 404);
+        }
+
+        if ($banResponse = $this->denyBannedCustomer($customer)) {
+            return $banResponse;
+        }
+
+        $subscription = CustomerGymService::query()
+            ->where('customer_id', (int) $customer->id)
+            ->where('gym_service_id', (int) $data['service_id'])
+            ->where('is_active', 1)
+            ->with('gymService:id,name,description,is_periodical,visit_amount,day_amount')
+            ->orderByDesc('id')
+            ->first();
+
+        if (! $subscription || ! $subscription->gymService) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Active customer service not found',
+                'code' => 4,
+            ], 404);
+        }
+
+        $service = $subscription->gymService;
+        $isPeriodical = (bool) $service->is_periodical;
+
+        $leftedVisitsAmount = null;
+        if (! $isPeriodical) {
+            $leftedVisitsAmount = max(
+                0,
+                (int) $service->visit_amount - (int) $subscription->finished_visits_amount
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Customer gym service info fetched successfully',
+            'code' => 0,
+            'data' => [
+                'service_name' => $service->name,
+                'description' => $service->description,
+                'date_from' => $subscription->created_at?->toDateTimeString(),
+                'date_to' => $subscription->expired_at?->toDateTimeString(),
+                'lefted_visits_amount' => $leftedVisitsAmount,
+                'can_be_frosen' => false,
+                'can_be_extended' => false,
+                'can_buy_with_discount' => false,
+            ],
+        ], 200);
+    }
 }
 
