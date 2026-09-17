@@ -170,7 +170,7 @@ class GymCustomerController extends Controller
                 'code' => 0,
                 'data' => [
                     'service_name' => 'Гостьовий візит',
-                    'description' => null,
+                    'description' => 'Запрошуємо Вас на перше тренування безкоштовно',
                     'date_from' => null,
                     'date_to' => null,
                     'lefted_visits_amount' => null,
@@ -197,7 +197,7 @@ class GymCustomerController extends Controller
                 'code' => 0,
                 'data' => [
                     'service_name' => 'Персонал',
-                    'description' => null,
+                    'description' => 'Прохід для персоналу',
                     'date_from' => null,
                     'date_to' => null,
                     'lefted_visits_amount' => null,
