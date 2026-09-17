@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'sales_default',
     'sales_military_member',
     'sales_student',
+    'freeze_day_amount',
 ])]
 class GymService extends Model
 {
@@ -37,6 +38,7 @@ class GymService extends Model
             'sales_default' => 'integer',
             'sales_military_member' => 'integer',
             'sales_student' => 'integer',
+            'freeze_day_amount' => 'integer',
         ];
     }
 

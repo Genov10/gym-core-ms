@@ -12,6 +12,7 @@ use App\Models\GymService;
 use App\Models\LockerRoom;
 use App\Models\LockerRoomItem;
 use App\Services\PassExpiryWebhookNotifier;
+use App\Services\SubscriptionFreezeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -127,6 +128,12 @@ class VisitController extends Controller
                             'code' => 4,
                         ],
                     ];
+                }
+
+                $freezeService = app(SubscriptionFreezeService::class);
+                if ($freezeService->isFreezeActive($customerGymService)) {
+                    $freezeService->endFreeze($customerGymService);
+                    $customerGymService->refresh();
                 }
 
                 $isPeriodical = (bool) $gymService->is_periodical;

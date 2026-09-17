@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\GymCustomerController;
 use App\Http\Controllers\Api\GymServicesController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PassExpiryController;
+use App\Http\Controllers\Api\SubscriptionFreezeController;
 use App\Http\Controllers\Api\VisitController;
 use App\Http\Controllers\Api\WayForPayController;
 use App\Http\Controllers\PaymentResultController;
@@ -21,6 +22,9 @@ Route::get('/finish-visits-periodically', [VisitController::class, 'finishVisits
 
 Route::get('/check-passes-for-one-day', [PassExpiryController::class, 'checkPassesForOneDay']);
 Route::get('/check-passes-for-three-days', [PassExpiryController::class, 'checkPassesForThreeDays']);
+Route::get('/gym-freeze-preview', [SubscriptionFreezeController::class, 'preview']);
+Route::get('/gym-freeze-confirm', [SubscriptionFreezeController::class, 'confirm']);
+Route::get('/check-freezes-expiry', [SubscriptionFreezeController::class, 'finishExpired']);
 
 // WayForPay
 Route::post('/wayforpay/purchase', [WayForPayController::class, 'purchase']);

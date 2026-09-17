@@ -36,6 +36,7 @@ class GymServicesController extends Controller
             'is_active' => ['nullable', 'boolean'],
             'day_amount' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'visit_amount' => ['nullable', 'integer', 'min:0', 'max:1000000'],
+            'freeze_day_amount' => ['nullable', 'integer', 'min:0', 'max:1000000'],
         ]);
 
         $is_periodical = ($data['day_amount'] ?? 0) > 0;
@@ -48,6 +49,7 @@ class GymServicesController extends Controller
             'is_periodical' => $is_periodical,
             'day_amount' => $data['day_amount'] ?? null,
             'visit_amount' => $data['visit_amount'] ?? null,
+            'freeze_day_amount' => (int) ($data['freeze_day_amount'] ?? 0),
             'created_at' => Carbon::now(),
         ]);
 
@@ -63,6 +65,7 @@ class GymServicesController extends Controller
             'is_active' => ['nullable', 'boolean'],
             'day_amount' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'visit_amount' => ['nullable', 'integer', 'min:0', 'max:1000000'],
+            'freeze_day_amount' => ['nullable', 'integer', 'min:0', 'max:1000000'],
         ], $this->salesPercentRules()));
 
         $is_periodical = ($data['day_amount'] ?? 0) > 0;
@@ -75,6 +78,7 @@ class GymServicesController extends Controller
             'is_periodical' => $is_periodical,
             'day_amount' => $data['day_amount'] ?? null,
             'visit_amount' => $data['visit_amount'] ?? null,
+            'freeze_day_amount' => (int) ($data['freeze_day_amount'] ?? 0),
             'sales_default' => (int) $data['sales_default'],
             'sales_military_member' => (int) $data['sales_military_member'],
             'sales_student' => (int) $data['sales_student'],

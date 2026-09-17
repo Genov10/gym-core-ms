@@ -7,6 +7,7 @@ use App\Http\Controllers\Concerns\ChecksCustomerBan;
 use App\Models\Customer;
 use App\Models\GymService;
 use App\Models\CustomerGymService;
+use App\Services\SubscriptionFreezeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Providers\CustomerProvider;
@@ -128,7 +129,7 @@ class GymCustomerController extends Controller
         ], 200);
     }
 
-    public function getCustomerGymServiceInfo(Request $request)
+    public function getCustomerGymServiceInfo(Request $request, SubscriptionFreezeService $freezeService)
     {
         $data = $request->validate([
             'telegram_id' => ['required', 'integer'],
@@ -155,7 +156,7 @@ class GymCustomerController extends Controller
             ->where('customer_id', (int) $customer->id)
             ->where('gym_service_id', (int) $data['service_id'])
             ->where('is_active', 1)
-            ->with('gymService:id,name,description,is_periodical,visit_amount,day_amount')
+            ->with('gymService:id,name,description,is_periodical,visit_amount,day_amount,freeze_day_amount')
             ->orderByDesc('id')
             ->first();
 
@@ -188,7 +189,7 @@ class GymCustomerController extends Controller
                 'date_from' => $subscription->created_at?->toDateString(),
                 'date_to' => $subscription->expired_at?->toDateString(),
                 'lefted_visits_amount' => $leftedVisitsAmount,
-                'can_be_frosen' => false,
+                'can_be_frosen' => $freezeService->canFreeze($subscription, $service),
                 'can_be_extended' => false,
                 'can_buy_with_discount' => false,
             ],

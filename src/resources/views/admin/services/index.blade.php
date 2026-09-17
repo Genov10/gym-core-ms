@@ -41,6 +41,12 @@
                 @error('visit_amount')<p class="admin-error">{{ $message }}</p>@enderror
             </div>
 
+            <div class="admin-field">
+                <label for="freeze_day_amount">Макс. дней заморозки</label>
+                <input id="freeze_day_amount" name="freeze_day_amount" type="number" min="0" value="{{ old('freeze_day_amount', 0) }}" class="admin-input">
+                @error('freeze_day_amount')<p class="admin-error">{{ $message }}</p>@enderror
+            </div>
+
             <div class="admin-form-actions admin-form-actions--stack">
                 <label class="admin-check">
                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', '1') ? 'checked' : '' }}>

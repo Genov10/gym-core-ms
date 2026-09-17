@@ -50,6 +50,13 @@
                 @error('visit_amount')<p class="admin-error">{{ $message }}</p>@enderror
             </div>
 
+            <div class="admin-field">
+                <label for="freeze_day_amount">Макс. дней заморозки</label>
+                <input id="freeze_day_amount" name="freeze_day_amount" type="number" min="0" step="1" value="{{ old('freeze_day_amount', $service->freeze_day_amount ?? 0) }}" class="admin-input">
+                <p class="hint">Только для периодических. 0 = заморозка недоступна.</p>
+                @error('freeze_day_amount')<p class="admin-error">{{ $message }}</p>@enderror
+            </div>
+
             <div class="admin-field admin-field--span admin-panel admin-panel--nested">
                 <h3>Скидки, %</h3>
                 <p class="hint">Целое число от 0 до 100 (без дробной части)</p>

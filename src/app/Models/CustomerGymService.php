@@ -14,6 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'is_active',
     'finished_visits_amount',
     'purchase_date',
+    'freeze_start',
+    'freeze_end',
+    'freeze_days_used',
 ])]
 class CustomerGymService extends Model
 {
@@ -29,6 +32,9 @@ class CustomerGymService extends Model
             'purchase_date' => 'datetime',
             'is_active' => 'boolean',
             'finished_visits_amount' => 'integer',
+            'freeze_start' => 'datetime',
+            'freeze_end' => 'datetime',
+            'freeze_days_used' => 'integer',
         ];
     }
 
