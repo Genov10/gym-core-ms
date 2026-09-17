@@ -89,19 +89,38 @@ class GymCustomerController extends Controller
         $customerGymServices = CustomerGymService::query()
             ->where('customer_id', (int) $customer->id)
             ->where('is_active', 1)
-            ->with('gymService:id,name')
+            ->with('gymService:id,name,is_periodical,visit_amount')
             ->get();
 
+        $now = Carbon::now();
         $services = [];
         foreach ($customerGymServices as $customerGymService) {
-            if (! $customerGymService->gymService) {
+            $service = $customerGymService->gymService;
+            if (! $service) {
                 // Orphaned row: the related service was deleted; skip to avoid 500.
                 continue;
             }
 
+            // Keep list in sync with startVisit: hide already expired / exhausted passes.
+            if ((bool) $service->is_periodical) {
+                if ($customerGymService->expired_at && $customerGymService->expired_at->lt($now)) {
+                    $customerGymService->is_active = false;
+                    $customerGymService->save();
+                    continue;
+                }
+            } else {
+                $remaining = (int) $service->visit_amount - (int) $customerGymService->finished_visits_amount;
+                if ($remaining <= 0) {
+                    $customerGymService->is_active = false;
+                    $customerGymService->expired_at ??= $now;
+                    $customerGymService->save();
+                    continue;
+                }
+            }
+
             $services[] = [
-                'id' => $customerGymService->gymService->id,
-                'name' => $customerGymService->gymService->name,
+                'id' => $service->id,
+                'name' => $service->name,
             ];
         }
 
@@ -226,6 +245,18 @@ class GymCustomerController extends Controller
 
         $service = $subscription->gymService;
         $isPeriodical = (bool) $service->is_periodical;
+        $now = Carbon::now();
+
+        if ($isPeriodical && $subscription->expired_at && $subscription->expired_at->lt($now)) {
+            $subscription->is_active = false;
+            $subscription->save();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Subscription expired',
+                'code' => 4,
+            ], 400);
+        }
 
         $leftedVisitsAmount = null;
         if (! $isPeriodical) {
@@ -233,6 +264,18 @@ class GymCustomerController extends Controller
                 0,
                 (int) $service->visit_amount - (int) $subscription->finished_visits_amount
             );
+
+            if ($leftedVisitsAmount <= 0) {
+                $subscription->is_active = false;
+                $subscription->expired_at ??= $now;
+                $subscription->save();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Visit not allowed',
+                    'code' => 4,
+                ], 400);
+            }
         }
 
         return response()->json([
