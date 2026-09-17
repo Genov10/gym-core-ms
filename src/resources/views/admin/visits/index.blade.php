@@ -121,7 +121,13 @@
                                     $customerLabel = '#'.$customer->id;
                                 }
                             }
-                            $serviceName = $visit->gymService?->name ?? '—';
+                            if ($visit->gym_service_id === 0 || $visit->gym_service_id === '0') {
+                                $serviceName = 'Гостьовий візит';
+                            } elseif ((int) $visit->gym_service_id === -1) {
+                                $serviceName = 'Персонал';
+                            } else {
+                                $serviceName = $visit->gymService?->name ?? '—';
+                            }
                             $lockerRoomName = $visit->lockerRoom?->name ?? '—';
                             $lockerNum = $visit->locker_number !== null && $visit->locker_number !== '' ? (string) $visit->locker_number : '—';
                         @endphp
