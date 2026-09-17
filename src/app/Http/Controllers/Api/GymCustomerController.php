@@ -185,8 +185,8 @@ class GymCustomerController extends Controller
             'data' => [
                 'service_name' => $service->name,
                 'description' => $service->description,
-                'date_from' => $subscription->created_at?->toDateTimeString(),
-                'date_to' => $subscription->expired_at?->toDateTimeString(),
+                'date_from' => $subscription->created_at?->toDateString(),
+                'date_to' => $subscription->expired_at?->toDateString(),
                 'lefted_visits_amount' => $leftedVisitsAmount,
                 'can_be_frosen' => false,
                 'can_be_extended' => false,
