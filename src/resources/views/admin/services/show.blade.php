@@ -112,30 +112,29 @@
                 </div>
             </div>
 
-            <div class="admin-field admin-field--span admin-panel admin-panel--nested">
-                <h3>Продление</h3>
-
+            <div class="admin-field">
+                <label>Продление</label>
                 <label class="admin-check">
                     <input type="checkbox" name="can_be_extended" value="1" {{ old('can_be_extended', $service->can_be_extended) ? 'checked' : '' }}>
                     Доступно продление
                 </label>
                 @error('can_be_extended')<p class="admin-error">{{ $message }}</p>@enderror
+            </div>
 
-                <div class="admin-field" style="margin-top: 1rem;">
-                    <label for="sale_for_next">Скидка на покупку следующего такого же абонемента (По умолчанию 0, скидки нет)</label>
-                    <input
-                        id="sale_for_next"
-                        name="sale_for_next"
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="1"
-                        value="{{ old('sale_for_next', $service->sale_for_next ?? 0) }}"
-                        class="admin-input"
-                    >
-                    <p class="hint">Целое число от 0 до 100 (%)</p>
-                    @error('sale_for_next')<p class="admin-error">{{ $message }}</p>@enderror
-                </div>
+            <div class="admin-field">
+                <label for="sale_for_next">Скидка на следующий такой же абонемент, %</label>
+                <input
+                    id="sale_for_next"
+                    name="sale_for_next"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="{{ old('sale_for_next', $service->sale_for_next ?? 0) }}"
+                    class="admin-input"
+                >
+                <p class="hint">0 = без скидки</p>
+                @error('sale_for_next')<p class="admin-error">{{ $message }}</p>@enderror
             </div>
 
             <div class="admin-form-actions admin-form-actions--stack admin-field--span">
