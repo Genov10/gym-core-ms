@@ -113,11 +113,17 @@
             </div>
 
             <div class="admin-field">
-                <label>Продление</label>
-                <label class="admin-check">
-                    <input type="checkbox" name="can_be_extended" value="1" {{ old('can_be_extended', $service->can_be_extended) ? 'checked' : '' }}>
-                    Доступно продление
-                </label>
+                <label for="can_be_extended">Продление</label>
+                <input
+                    id="can_be_extended"
+                    name="can_be_extended"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value="{{ old('can_be_extended', $service->can_be_extended ?? 0) }}"
+                    class="admin-input"
+                >
+                <p class="hint">0 — продление недоступно</p>
                 @error('can_be_extended')<p class="admin-error">{{ $message }}</p>@enderror
             </div>
 

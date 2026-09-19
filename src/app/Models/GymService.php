@@ -41,7 +41,7 @@ class GymService extends Model
             'sales_military_member' => 'integer',
             'sales_student' => 'integer',
             'freeze_day_amount' => 'integer',
-            'can_be_extended' => 'boolean',
+            'can_be_extended' => 'integer',
             'sale_for_next' => 'integer',
         ];
     }

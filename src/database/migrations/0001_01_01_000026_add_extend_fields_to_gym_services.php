@@ -14,7 +14,7 @@ return new class extends Migration
 
         Schema::table('gym_services', function (Blueprint $table) {
             if (! Schema::hasColumn('gym_services', 'can_be_extended')) {
-                $table->boolean('can_be_extended')->default(false);
+                $table->integer('can_be_extended')->default(0);
             }
             if (! Schema::hasColumn('gym_services', 'sale_for_next')) {
                 $table->integer('sale_for_next')->default(0);

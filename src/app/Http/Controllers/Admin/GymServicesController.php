@@ -66,7 +66,7 @@ class GymServicesController extends Controller
             'day_amount' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'visit_amount' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'freeze_day_amount' => ['nullable', 'integer', 'min:0', 'max:1000000'],
-            'can_be_extended' => ['nullable', 'boolean'],
+            'can_be_extended' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'sale_for_next' => ['nullable', 'integer', 'min:0', 'max:100'],
         ], $this->salesPercentRules()));
 
@@ -81,7 +81,7 @@ class GymServicesController extends Controller
             'day_amount' => $data['day_amount'] ?? null,
             'visit_amount' => $data['visit_amount'] ?? null,
             'freeze_day_amount' => (int) ($data['freeze_day_amount'] ?? 0),
-            'can_be_extended' => (bool) ($data['can_be_extended'] ?? false),
+            'can_be_extended' => (int) ($data['can_be_extended'] ?? 0),
             'sale_for_next' => (int) ($data['sale_for_next'] ?? 0),
             'sales_default' => (int) $data['sales_default'],
             'sales_military_member' => (int) $data['sales_military_member'],
