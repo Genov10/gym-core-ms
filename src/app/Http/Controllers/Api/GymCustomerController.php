@@ -231,7 +231,7 @@ class GymCustomerController extends Controller
             ->where('customer_id', (int) $customer->id)
             ->where('gym_service_id', $serviceId)
             ->where('is_active', 1)
-            ->with('gymService:id,name,description,is_periodical,visit_amount,day_amount,freeze_day_amount')
+            ->with('gymService:id,name,description,is_periodical,visit_amount,day_amount,freeze_day_amount,can_be_extended')
             ->orderByDesc('id')
             ->first();
 
@@ -289,10 +289,41 @@ class GymCustomerController extends Controller
                 'date_to' => $subscription->expired_at?->toDateString(),
                 'lefted_visits_amount' => $leftedVisitsAmount,
                 'can_be_frosen' => $freezeService->canFreeze($subscription, $service),
-                'can_be_extended' => false,
+                'can_be_extended' => $this->canBeExtended($customer, $subscription, $service),
                 'can_buy_with_discount' => false,
             ],
         ], 200);
+    }
+
+    /**
+     * Extension is allowed when:
+     * 1) service.can_be_extended > 0
+     * 2) this subscription was not extended yet
+     * 3) customer has no other same service with created_at and expired_at both null (bought but not started)
+     */
+    private function canBeExtended(Customer $customer, CustomerGymService $subscription, GymService $service): bool
+    {
+        if ((int) $service->can_be_extended <= 0) {
+            return false;
+        }
+
+        if ((bool) $subscription->was_extended) {
+            return false;
+        }
+
+        $hasUnstartedDuplicate = CustomerGymService::query()
+            ->where('customer_id', (int) $customer->id)
+            ->where('gym_service_id', (int) $service->id)
+            ->where('id', '!=', (int) $subscription->id)
+            ->whereNull('created_at')
+            ->whereNull('expired_at')
+            ->exists();
+
+        if ($hasUnstartedDuplicate) {
+            return false;
+        }
+
+        return true;
     }
 }
 
