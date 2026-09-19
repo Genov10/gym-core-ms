@@ -231,7 +231,7 @@ class GymCustomerController extends Controller
             ->where('customer_id', (int) $customer->id)
             ->where('gym_service_id', $serviceId)
             ->where('is_active', 1)
-            ->with('gymService:id,name,description,is_periodical,visit_amount,day_amount,freeze_day_amount,can_be_extended')
+            ->with('gymService:id,name,description,is_periodical,visit_amount,day_amount,freeze_day_amount,can_be_extended,sale_for_next')
             ->orderByDesc('id')
             ->first();
 
@@ -290,7 +290,7 @@ class GymCustomerController extends Controller
                 'lefted_visits_amount' => $leftedVisitsAmount,
                 'can_be_frosen' => $freezeService->canFreeze($subscription, $service),
                 'can_be_extended' => $this->canBeExtended($customer, $subscription, $service),
-                'can_buy_with_discount' => false,
+                'can_buy_with_discount' => $this->canBuyWithDiscount($customer, $subscription, $service),
             ],
         ], 200);
     }
@@ -311,19 +311,55 @@ class GymCustomerController extends Controller
             return false;
         }
 
-        $hasUnstartedDuplicate = CustomerGymService::query()
+        if ($this->hasUnstartedDuplicateSubscription($customer, $service, $subscription)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Next-purchase discount is allowed when:
+     * 1) service.sale_for_next > 0
+     * 2) customer has no unstarted same service (created_at and expired_at both null)
+     * 3) current subscription expires within 3 days (inclusive)
+     */
+    private function canBuyWithDiscount(Customer $customer, CustomerGymService $subscription, GymService $service): bool
+    {
+        if ((int) $service->sale_for_next <= 0) {
+            return false;
+        }
+
+        if ($this->hasUnstartedDuplicateSubscription($customer, $service, $subscription)) {
+            return false;
+        }
+
+        if ($subscription->expired_at === null) {
+            return false;
+        }
+
+        $expiresAt = $subscription->expired_at->copy()->startOfDay();
+        $today = Carbon::today();
+
+        if ($expiresAt->lt($today)) {
+            return false;
+        }
+
+        return $today->diffInDays($expiresAt) <= 3;
+    }
+
+    private function hasUnstartedDuplicateSubscription(
+        Customer $customer,
+        GymService $service,
+        CustomerGymService $subscription,
+    ): bool {
+        return CustomerGymService::query()
             ->where('customer_id', (int) $customer->id)
             ->where('gym_service_id', (int) $service->id)
             ->where('id', '!=', (int) $subscription->id)
             ->whereNull('created_at')
             ->whereNull('expired_at')
             ->exists();
-
-        if ($hasUnstartedDuplicate) {
-            return false;
-        }
-
-        return true;
     }
 }
 
