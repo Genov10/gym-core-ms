@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'freeze_start',
     'freeze_end',
     'freeze_days_used',
+    'was_extended',
+    'extend_timestamp',
 ])]
 class CustomerGymService extends Model
 {
@@ -35,6 +37,8 @@ class CustomerGymService extends Model
             'freeze_start' => 'datetime',
             'freeze_end' => 'datetime',
             'freeze_days_used' => 'integer',
+            'was_extended' => 'boolean',
+            'extend_timestamp' => 'datetime',
         ];
     }
 

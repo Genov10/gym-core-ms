@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'sales_military_member',
     'sales_student',
     'freeze_day_amount',
+    'can_be_extended',
+    'sale_for_next',
 ])]
 class GymService extends Model
 {
@@ -39,6 +41,8 @@ class GymService extends Model
             'sales_military_member' => 'integer',
             'sales_student' => 'integer',
             'freeze_day_amount' => 'integer',
+            'can_be_extended' => 'boolean',
+            'sale_for_next' => 'integer',
         ];
     }
 
