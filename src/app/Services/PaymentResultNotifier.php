@@ -9,6 +9,11 @@ final class PaymentResultNotifier
 {
     public function notify(int $telegramId, string $serviceName, bool $success): void
     {
+        // Не шлём в бот сообщения о неуспешной оплате.
+        if (! $success) {
+            return;
+        }
+
         $url = (string) config('services.payment_result.webhook_url');
         if ($url === '') {
             return;
