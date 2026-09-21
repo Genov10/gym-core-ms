@@ -82,7 +82,7 @@ class SubscriptionExtendService
             ];
         }
 
-        $amount = (float) $service->price;
+        $amount = (float) $service->can_be_extended;
         $currency = (string) config('services.wayforpay.currency', 'UAH');
         $extendDays = self::EXTEND_DAYS;
 

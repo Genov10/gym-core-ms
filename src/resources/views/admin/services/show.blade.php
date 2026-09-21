@@ -123,7 +123,7 @@
                     value="{{ old('can_be_extended', $service->can_be_extended ?? 0) }}"
                     class="admin-input"
                 >
-                <p class="hint">0 — продление недоступно</p>
+                <p class="hint">0 — продление недоступно; иначе цена продления (UAH)</p>
                 @error('can_be_extended')<p class="admin-error">{{ $message }}</p>@enderror
             </div>
 
