@@ -7,7 +7,6 @@ use App\Http\Controllers\Concerns\ChecksCustomerBan;
 use App\Models\Customer;
 use App\Models\CustomerGymService;
 use App\Models\PaymentOrder;
-use App\Services\PaymentResultNotifier;
 use App\Services\SubscriptionExtendService;
 use App\Services\WayForPayService;
 use Illuminate\Http\JsonResponse;
@@ -83,7 +82,6 @@ class SubscriptionExtendController extends Controller
         Request $request,
         WayForPayService $wayForPay,
         SubscriptionExtendService $extendService,
-        PaymentResultNotifier $paymentResultNotifier,
     ): JsonResponse {
         $payloadRaw = $request->getContent();
         $payload = json_decode($payloadRaw, true);
@@ -139,15 +137,6 @@ class SubscriptionExtendController extends Controller
         }
 
         $order->save();
-
-        if ($customer && $customer->telegram_id) {
-            $serviceName = $order->gymService?->name ?? '';
-            $paymentResultNotifier->notify(
-                telegramId: (int) $customer->telegram_id,
-                serviceName: $serviceName !== '' ? 'Продлення: '.$serviceName : 'Продлення абонементу',
-                success: $paymentSuccess,
-            );
-        }
 
         $time = time();
         $status = 'accept';

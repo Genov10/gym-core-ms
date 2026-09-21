@@ -237,7 +237,7 @@ class WayForPayController extends Controller
             ? GymService::query()->where('id', $order->gym_service_id)->first()
             : null;
 
-        if ($customer && $customer->telegram_id) {
+        if ($customer && $customer->telegram_id && $order->purpose !== PaymentOrder::PURPOSE_EXTEND) {
             $paymentResultNotifier->notify(
                 telegramId: (int) $customer->telegram_id,
                 serviceName: (string) ($service?->name ?? ''),

@@ -104,7 +104,7 @@ class SubscriptionExtendService
         $returnUrl = (string) config('services.wayforpay.return_url');
         $serviceUrl = $this->extendConfirmUrl();
 
-        $productName = 'Продлення: '.$service->name.' (+'.$extendDays.' днів)';
+        $productName = 'Продовження: '.$service->name.' (+'.$extendDays.' днів)';
 
         $payload = $this->wayForPay->buildPurchaseRequest(
             orderReference: $orderReference,
