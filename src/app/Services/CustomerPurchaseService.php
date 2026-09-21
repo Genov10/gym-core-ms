@@ -28,6 +28,8 @@ class CustomerPurchaseService
                 'name',
                 'price',
                 'description',
+                'is_periodical',
+                'visit_amount',
                 'sales_default',
                 'sales_military_member',
                 'sales_student',
