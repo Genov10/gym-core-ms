@@ -29,6 +29,11 @@ class SubscriptionExtendService
             return false;
         }
 
+        // Продление только для уже начатого абонемента (есть даты периода).
+        if ($subscription->created_at === null || $subscription->expired_at === null) {
+            return false;
+        }
+
         if ($this->hasUnstartedDuplicate($customer, $service, $subscription)) {
             return false;
         }
@@ -41,10 +46,12 @@ class SubscriptionExtendService
         GymService $service,
         CustomerGymService $subscription,
     ): bool {
+        // Только активные «куплен, но не начат». Черновики оплаты (is_active=0) не блокируют.
         return CustomerGymService::query()
             ->where('customer_id', (int) $customer->id)
             ->where('gym_service_id', (int) $service->id)
             ->where('id', '!=', (int) $subscription->id)
+            ->where('is_active', 1)
             ->whereNull('created_at')
             ->whereNull('expired_at')
             ->exists();
