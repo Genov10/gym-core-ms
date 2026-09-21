@@ -14,10 +14,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'amount',
     'currency',
     'status',
+    'purpose',
     'provider_payload',
 ])]
 class PaymentOrder extends Model
 {
+    public const PURPOSE_PURCHASE = 'purchase';
+
+    public const PURPOSE_EXTEND = 'extend';
+
     protected function casts(): array
     {
         return [

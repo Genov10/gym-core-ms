@@ -7,6 +7,7 @@ use App\Http\Controllers\Concerns\ChecksCustomerBan;
 use App\Models\Customer;
 use App\Models\GymService;
 use App\Models\CustomerGymService;
+use App\Services\SubscriptionExtendService;
 use App\Services\SubscriptionFreezeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -148,7 +149,7 @@ class GymCustomerController extends Controller
         ], 200);
     }
 
-    public function getCustomerGymServiceInfo(Request $request, SubscriptionFreezeService $freezeService)
+    public function getCustomerGymServiceInfo(Request $request, SubscriptionFreezeService $freezeService, SubscriptionExtendService $extendService)
     {
         $data = $request->validate([
             'telegram_id' => ['required', 'integer'],
@@ -289,33 +290,10 @@ class GymCustomerController extends Controller
                 'date_to' => $subscription->expired_at?->toDateString(),
                 'lefted_visits_amount' => $leftedVisitsAmount,
                 'can_be_frosen' => $freezeService->canFreeze($subscription, $service),
-                'can_be_extended' => $this->canBeExtended($customer, $subscription, $service),
-                'can_buy_with_discount' => $this->canBuyWithDiscount($customer, $subscription, $service),
+                'can_be_extended' => $extendService->canExtend($customer, $subscription, $service),
+                'can_buy_with_discount' => $this->canBuyWithDiscount($customer, $subscription, $service, $extendService),
             ],
         ], 200);
-    }
-
-    /**
-     * Extension is allowed when:
-     * 1) service.can_be_extended > 0
-     * 2) this subscription was not extended yet
-     * 3) customer has no other same service with created_at and expired_at both null (bought but not started)
-     */
-    private function canBeExtended(Customer $customer, CustomerGymService $subscription, GymService $service): bool
-    {
-        if ((int) $service->can_be_extended <= 0) {
-            return false;
-        }
-
-        if ((bool) $subscription->was_extended) {
-            return false;
-        }
-
-        if ($this->hasUnstartedDuplicateSubscription($customer, $service, $subscription)) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -324,13 +302,17 @@ class GymCustomerController extends Controller
      * 2) customer has no unstarted same service (created_at and expired_at both null)
      * 3) current subscription expires within 3 days (inclusive)
      */
-    private function canBuyWithDiscount(Customer $customer, CustomerGymService $subscription, GymService $service): bool
-    {
+    private function canBuyWithDiscount(
+        Customer $customer,
+        CustomerGymService $subscription,
+        GymService $service,
+        SubscriptionExtendService $extendService,
+    ): bool {
         if ((int) $service->sale_for_next <= 0) {
             return false;
         }
 
-        if ($this->hasUnstartedDuplicateSubscription($customer, $service, $subscription)) {
+        if ($extendService->hasUnstartedDuplicate($customer, $service, $subscription)) {
             return false;
         }
 
@@ -346,20 +328,6 @@ class GymCustomerController extends Controller
         }
 
         return $today->diffInDays($expiresAt) <= 3;
-    }
-
-    private function hasUnstartedDuplicateSubscription(
-        Customer $customer,
-        GymService $service,
-        CustomerGymService $subscription,
-    ): bool {
-        return CustomerGymService::query()
-            ->where('customer_id', (int) $customer->id)
-            ->where('gym_service_id', (int) $service->id)
-            ->where('id', '!=', (int) $subscription->id)
-            ->whereNull('created_at')
-            ->whereNull('expired_at')
-            ->exists();
     }
 }
 

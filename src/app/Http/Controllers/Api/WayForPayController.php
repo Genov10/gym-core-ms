@@ -9,6 +9,7 @@ use App\Models\CustomerGymService;
 use App\Models\GymService;
 use App\Models\PaymentOrder;
 use App\Services\PaymentResultNotifier;
+use App\Services\SubscriptionExtendService;
 use App\Services\WayForPayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -180,46 +181,50 @@ class WayForPayController extends Controller
         if ($paymentSuccess) {
             $order->status = 'approved';
 
-            // Уже есть активная услуга — повторно не создаём.
-            $existsActive = CustomerGymService::query()
-                ->where('customer_id', $order->customer_id)
-                ->where('gym_service_id', $order->gym_service_id)
-                ->where('is_active', 1)
-                ->first();
+            if ($order->purpose === PaymentOrder::PURPOSE_EXTEND) {
+                app(SubscriptionExtendService::class)->applyPaidExtension($order);
+            } else {
+                // Уже есть активная услуга — повторно не создаём.
+                $existsActive = CustomerGymService::query()
+                    ->where('customer_id', $order->customer_id)
+                    ->where('gym_service_id', $order->gym_service_id)
+                    ->where('is_active', 1)
+                    ->first();
 
-            if (! $existsActive && $order->customer_id && $order->gym_service_id) {
-                // Срок (created_at / expired_at) стартует на первом визите — здесь только активация.
-                $pending = null;
+                if (! $existsActive && $order->customer_id && $order->gym_service_id) {
+                    // Срок (created_at / expired_at) стартует на первом визите — здесь только активация.
+                    $pending = null;
 
-                if (! empty($order->customer_gym_service_id)) {
-                    $pending = CustomerGymService::query()
-                        ->where('id', (int) $order->customer_gym_service_id)
-                        ->where('customer_id', $order->customer_id)
-                        ->where('is_active', 0)
-                        ->first();
-                }
+                    if (! empty($order->customer_gym_service_id)) {
+                        $pending = CustomerGymService::query()
+                            ->where('id', (int) $order->customer_gym_service_id)
+                            ->where('customer_id', $order->customer_id)
+                            ->where('is_active', 0)
+                            ->first();
+                    }
 
-                if (! $pending) {
-                    $pending = CustomerGymService::query()
-                        ->where('customer_id', $order->customer_id)
-                        ->where('gym_service_id', $order->gym_service_id)
-                        ->where('is_active', 0)
-                        ->orderByDesc('id')
-                        ->first();
-                }
+                    if (! $pending) {
+                        $pending = CustomerGymService::query()
+                            ->where('customer_id', $order->customer_id)
+                            ->where('gym_service_id', $order->gym_service_id)
+                            ->where('is_active', 0)
+                            ->orderByDesc('id')
+                            ->first();
+                    }
 
-                if ($pending) {
-                    $pending->is_active = true;
-                    $pending->save();
-                } else {
-                    CustomerGymService::query()->create([
-                        'customer_id' => $order->customer_id,
-                        'gym_service_id' => $order->gym_service_id,
-                        'purchase_date' => Carbon::now(),
-                        'created_at' => null,
-                        'expired_at' => null,
-                        'is_active' => 1,
-                    ]);
+                    if ($pending) {
+                        $pending->is_active = true;
+                        $pending->save();
+                    } else {
+                        CustomerGymService::query()->create([
+                            'customer_id' => $order->customer_id,
+                            'gym_service_id' => $order->gym_service_id,
+                            'purchase_date' => Carbon::now(),
+                            'created_at' => null,
+                            'expired_at' => null,
+                            'is_active' => 1,
+                        ]);
+                    }
                 }
             }
         } else {

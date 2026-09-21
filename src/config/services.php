@@ -72,6 +72,9 @@ return [
 
             // Callback от WayForPay (serviceUrl).
             'service_url' => env('WAYFORPAY_SERVICE_URL') ?: ($appUrl !== '' ? $appUrl.'/api/wayforpay/callback' : ''),
+
+            // Callback для оплаты продления абонемента.
+            'extend_service_url' => env('WAYFORPAY_EXTEND_SERVICE_URL') ?: ($appUrl !== '' ? $appUrl.'/api/wayforpay/extend-confirm' : ''),
         ];
     })(),
 ];
