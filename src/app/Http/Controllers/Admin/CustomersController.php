@@ -251,15 +251,17 @@ class CustomersController extends Controller
                 ->withErrors(['grant' => 'Услуга не найдена или неактивна.']);
         }
 
-        $alreadyActive = CustomerGymService::query()
+        $alreadyUnstarted = CustomerGymService::query()
             ->where('customer_id', $customer->id)
             ->where('gym_service_id', $serviceId)
             ->where('is_active', 1)
+            ->whereNull('created_at')
+            ->whereNull('expired_at')
             ->exists();
 
-        if ($alreadyActive) {
+        if ($alreadyUnstarted) {
             return redirect($this->profileUrl($customer))
-                ->withErrors(['grant' => 'У клиента уже есть активный абонемент на эту услугу.']);
+                ->withErrors(['grant' => 'У клиента уже есть неначатый абонемент на эту услугу.']);
         }
 
         $subscription = CustomerGymService::query()->create([

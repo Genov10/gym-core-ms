@@ -31,6 +31,7 @@ class CustomerPurchaseService
                 'sales_default',
                 'sales_military_member',
                 'sales_student',
+                'sale_for_next',
             ]);
 
         $activeServiceIds = $excludeOwned
@@ -66,12 +67,16 @@ class CustomerPurchaseService
     {
         $amount = (int) $service->price;
 
-        $sale = $service->sales_default;
+        $sale = (int) ($service->sales_default ?? 0);
         if ($customer->is_military_member > 0) {
-            $sale = $service->sales_military_member;
+            $sale = (int) $service->sales_military_member;
         }
         if ($customer->is_student > 0) {
-            $sale = $service->sales_student;
+            $sale = (int) $service->sales_student;
+        }
+
+        if ($this->isEligibleForNextPurchaseDiscount($customer, $service)) {
+            $sale = max($sale, (int) $service->sale_for_next);
         }
 
         if ($sale > 0) {
@@ -79,6 +84,99 @@ class CustomerPurchaseService
         }
 
         return $amount;
+    }
+
+    /**
+     * Скидка на следующий такой же абонемент: sale_for_next > 0 и до конца текущего ≤ 3 дней.
+     */
+    public function isEligibleForNextPurchaseDiscount(Customer $customer, GymService $service): bool
+    {
+        if ((int) $service->sale_for_next <= 0) {
+            return false;
+        }
+
+        if ($this->hasUnstartedSubscription($customer, (int) $service->id)) {
+            return false;
+        }
+
+        $current = $this->findStartedActiveSubscription($customer, $service);
+        if (! $current || $current->expired_at === null) {
+            return false;
+        }
+
+        $expiresAt = $current->expired_at->copy()->startOfDay();
+        $today = Carbon::today();
+
+        if ($expiresAt->lt($today)) {
+            return false;
+        }
+
+        return $today->diffInDays($expiresAt) <= 3;
+    }
+
+    /**
+     * Есть оплаченный, но ещё не начатый абонемент этой услуги.
+     */
+    public function hasUnstartedSubscription(Customer $customer, int $serviceId): bool
+    {
+        return CustomerGymService::query()
+            ->where('customer_id', (int) $customer->id)
+            ->where('gym_service_id', $serviceId)
+            ->where('is_active', 1)
+            ->whereNull('created_at')
+            ->whereNull('expired_at')
+            ->exists();
+    }
+
+    /**
+     * Начатый и ещё не истёкший абонемент (кейс 2 — его берём на визит).
+     */
+    public function findStartedActiveSubscription(Customer $customer, GymService $service): ?CustomerGymService
+    {
+        $now = Carbon::now();
+        $isPeriodical = (bool) $service->is_periodical;
+
+        $query = CustomerGymService::query()
+            ->where('customer_id', (int) $customer->id)
+            ->where('gym_service_id', (int) $service->id)
+            ->where('is_active', 1)
+            ->whereNotNull('created_at');
+
+        if ($isPeriodical) {
+            $query->whereNotNull('expired_at')
+                ->where('expired_at', '>=', $now)
+                ->orderBy('expired_at');
+        } else {
+            $visitAmount = (int) $service->visit_amount;
+            $query->whereRaw('COALESCE(finished_visits_amount, 0) < ?', [$visitAmount])
+                ->orderBy('id');
+        }
+
+        return $query->first();
+    }
+
+    /**
+     * Неначатый активный абонемент (кейс 1 — стартуем его на первом визите).
+     */
+    public function findUnstartedSubscription(Customer $customer, GymService $service): ?CustomerGymService
+    {
+        return CustomerGymService::query()
+            ->where('customer_id', (int) $customer->id)
+            ->where('gym_service_id', (int) $service->id)
+            ->where('is_active', 1)
+            ->whereNull('created_at')
+            ->whereNull('expired_at')
+            ->orderBy('id')
+            ->first();
+    }
+
+    /**
+     * Для визита: сначала текущий начатый, иначе неначатый.
+     */
+    public function resolveSubscriptionForVisit(Customer $customer, GymService $service): ?CustomerGymService
+    {
+        return $this->findStartedActiveSubscription($customer, $service)
+            ?? $this->findUnstartedSubscription($customer, $service);
     }
 
     /**
@@ -106,16 +204,10 @@ class CustomerPurchaseService
             ];
         }
 
-        $alreadyActive = CustomerGymService::query()
-            ->where('customer_id', $customer->id)
-            ->where('gym_service_id', $service->id)
-            ->where('is_active', 1)
-            ->exists();
-
-        if ($alreadyActive) {
+        if ($this->hasUnstartedSubscription($customer, (int) $service->id)) {
             return [
                 'success' => false,
-                'message' => 'Customer already has this service',
+                'message' => 'Customer already has an unstarted subscription for this service',
                 'httpStatus' => 400,
             ];
         }
@@ -140,6 +232,7 @@ class CustomerPurchaseService
             'amount' => $amount,
             'currency' => $currency,
             'status' => 'created',
+            'purpose' => PaymentOrder::PURPOSE_PURCHASE,
         ]);
 
         $orderReference = 'gym_'.$paymentOrder->id.'_'.time();

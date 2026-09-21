@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\CustomerGymService;
 use App\Models\GymService;
 use App\Models\PaymentOrder;
+use App\Services\CustomerPurchaseService;
 use App\Services\PaymentResultNotifier;
 use App\Services\SubscriptionExtendService;
 use App\Services\WayForPayService;
@@ -54,30 +55,35 @@ class WayForPayController extends Controller
             return $banResponse;
         }
 
-        $alreadyActive = CustomerGymService::query()
-            ->where('customer_id', $customer->id)
-            ->where('gym_service_id', $service->id)
-            ->where('is_active', 1)
-            ->first();
+        $amount = (float) app(CustomerPurchaseService::class)->calculatePrice($service, $customer);
+        $currency = (string) config('services.wayforpay.currency', 'UAH');
 
-        if ($alreadyActive) {
+        if (app(CustomerPurchaseService::class)->hasUnstartedSubscription($customer, (int) $service->id)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Customer already has this service',
+                'message' => 'Customer already has an unstarted subscription for this service',
                 'code' => 2,
             ], 400);
         }
 
-        $amount = (float) $service->price;
-        $currency = (string) config('services.wayforpay.currency', 'UAH');
+        $pendingSubscription = CustomerGymService::query()->create([
+            'customer_id' => $customer->id,
+            'gym_service_id' => $service->id,
+            'created_at' => null,
+            'expired_at' => null,
+            'is_active' => 0,
+            'purchase_date' => Carbon::now(),
+        ]);
 
         $order = PaymentOrder::query()->create([
             'order_reference' => 'tmp',
             'customer_id' => $customer->id,
             'gym_service_id' => $service->id,
+            'customer_gym_service_id' => $pendingSubscription->id,
             'amount' => $amount,
             'currency' => $currency,
             'status' => 'created',
+            'purpose' => PaymentOrder::PURPOSE_PURCHASE,
         ]);
 
         $orderReference = 'gym_'.$order->id.'_'.time();
@@ -183,39 +189,38 @@ class WayForPayController extends Controller
 
             if ($order->purpose === PaymentOrder::PURPOSE_EXTEND) {
                 app(SubscriptionExtendService::class)->applyPaidExtension($order);
-            } else {
-                // Уже есть активная услуга — повторно не создаём.
-                $existsActive = CustomerGymService::query()
-                    ->where('customer_id', $order->customer_id)
-                    ->where('gym_service_id', $order->gym_service_id)
-                    ->where('is_active', 1)
-                    ->first();
+            } elseif ($order->customer_id && $order->gym_service_id) {
+                // Активируем pending даже если уже есть другой активный (покупка наперёд).
+                $pending = null;
 
-                if (! $existsActive && $order->customer_id && $order->gym_service_id) {
-                    // Срок (created_at / expired_at) стартует на первом визите — здесь только активация.
-                    $pending = null;
+                if (! empty($order->customer_gym_service_id)) {
+                    $pending = CustomerGymService::query()
+                        ->where('id', (int) $order->customer_gym_service_id)
+                        ->where('customer_id', $order->customer_id)
+                        ->where('is_active', 0)
+                        ->first();
+                }
 
-                    if (! empty($order->customer_gym_service_id)) {
-                        $pending = CustomerGymService::query()
-                            ->where('id', (int) $order->customer_gym_service_id)
-                            ->where('customer_id', $order->customer_id)
-                            ->where('is_active', 0)
-                            ->first();
-                    }
+                if (! $pending) {
+                    $pending = CustomerGymService::query()
+                        ->where('customer_id', $order->customer_id)
+                        ->where('gym_service_id', $order->gym_service_id)
+                        ->where('is_active', 0)
+                        ->orderByDesc('id')
+                        ->first();
+                }
 
-                    if (! $pending) {
-                        $pending = CustomerGymService::query()
-                            ->where('customer_id', $order->customer_id)
-                            ->where('gym_service_id', $order->gym_service_id)
-                            ->where('is_active', 0)
-                            ->orderByDesc('id')
-                            ->first();
-                    }
+                if ($pending) {
+                    $pending->is_active = true;
+                    $pending->save();
+                } else {
+                    $existsActive = CustomerGymService::query()
+                        ->where('customer_id', $order->customer_id)
+                        ->where('gym_service_id', $order->gym_service_id)
+                        ->where('is_active', 1)
+                        ->exists();
 
-                    if ($pending) {
-                        $pending->is_active = true;
-                        $pending->save();
-                    } else {
+                    if (! $existsActive) {
                         CustomerGymService::query()->create([
                             'customer_id' => $order->customer_id,
                             'gym_service_id' => $order->gym_service_id,

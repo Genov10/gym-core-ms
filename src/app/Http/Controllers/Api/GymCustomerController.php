@@ -7,6 +7,7 @@ use App\Http\Controllers\Concerns\ChecksCustomerBan;
 use App\Models\Customer;
 use App\Models\GymService;
 use App\Models\CustomerGymService;
+use App\Services\CustomerPurchaseService;
 use App\Services\SubscriptionExtendService;
 use App\Services\SubscriptionFreezeService;
 use Illuminate\Http\Request;
@@ -91,10 +92,12 @@ class GymCustomerController extends Controller
             ->where('customer_id', (int) $customer->id)
             ->where('is_active', 1)
             ->with('gymService:id,name,is_periodical,visit_amount')
+            ->orderByRaw('CASE WHEN created_at IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('id')
             ->get();
 
         $now = Carbon::now();
-        $services = [];
+        $servicesById = [];
         foreach ($customerGymServices as $customerGymService) {
             $service = $customerGymService->gymService;
             if (! $service) {
@@ -119,11 +122,18 @@ class GymCustomerController extends Controller
                 }
             }
 
-            $services[] = [
+            // Один пункт в списке на услугу (даже если есть текущий + купленный наперёд).
+            if (isset($servicesById[$service->id])) {
+                continue;
+            }
+
+            $servicesById[$service->id] = [
                 'id' => $service->id,
                 'name' => $service->name,
             ];
         }
+
+        $services = array_values($servicesById);
 
         $isGuestVisitAvailable = CustomerProvider::isGuestVisitAvailable($customer->id);
 
@@ -149,8 +159,12 @@ class GymCustomerController extends Controller
         ], 200);
     }
 
-    public function getCustomerGymServiceInfo(Request $request, SubscriptionFreezeService $freezeService, SubscriptionExtendService $extendService)
-    {
+    public function getCustomerGymServiceInfo(
+        Request $request,
+        SubscriptionFreezeService $freezeService,
+        SubscriptionExtendService $extendService,
+        CustomerPurchaseService $purchaseService,
+    ) {
         $data = $request->validate([
             'telegram_id' => ['required', 'integer'],
             'service_id' => ['required', 'integer'],
@@ -228,15 +242,19 @@ class GymCustomerController extends Controller
             ], 200);
         }
 
-        $subscription = CustomerGymService::query()
-            ->where('customer_id', (int) $customer->id)
-            ->where('gym_service_id', $serviceId)
-            ->where('is_active', 1)
-            ->with('gymService:id,name,description,is_periodical,visit_amount,day_amount,freeze_day_amount,can_be_extended,sale_for_next')
-            ->orderByDesc('id')
-            ->first();
+        $gymService = GymService::query()->where('id', $serviceId)->first();
+        if (! $gymService) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gym service not found',
+                'code' => 4,
+            ], 404);
+        }
 
-        if (! $subscription || ! $subscription->gymService) {
+        // Как при визите: сначала текущий начатый, иначе неначатый.
+        $subscription = $purchaseService->resolveSubscriptionForVisit($customer, $gymService);
+
+        if (! $subscription) {
             return response()->json([
                 'success' => false,
                 'message' => 'Active customer service not found',
@@ -244,7 +262,8 @@ class GymCustomerController extends Controller
             ], 404);
         }
 
-        $service = $subscription->gymService;
+        $subscription->loadMissing('gymService');
+        $service = $subscription->gymService ?? $gymService;
         $isPeriodical = (bool) $service->is_periodical;
         $now = Carbon::now();
 
@@ -291,43 +310,9 @@ class GymCustomerController extends Controller
                 'lefted_visits_amount' => $leftedVisitsAmount,
                 'can_be_frosen' => $freezeService->canFreeze($subscription, $service),
                 'can_be_extended' => $extendService->canExtend($customer, $subscription, $service),
-                'can_buy_with_discount' => $this->canBuyWithDiscount($customer, $subscription, $service, $extendService),
+                'can_buy_with_discount' => $purchaseService->isEligibleForNextPurchaseDiscount($customer, $service),
             ],
         ], 200);
-    }
-
-    /**
-     * Next-purchase discount is allowed when:
-     * 1) service.sale_for_next > 0
-     * 2) customer has no unstarted same service (created_at and expired_at both null)
-     * 3) current subscription expires within 3 days (inclusive)
-     */
-    private function canBuyWithDiscount(
-        Customer $customer,
-        CustomerGymService $subscription,
-        GymService $service,
-        SubscriptionExtendService $extendService,
-    ): bool {
-        if ((int) $service->sale_for_next <= 0) {
-            return false;
-        }
-
-        if ($extendService->hasUnstartedDuplicate($customer, $service, $subscription)) {
-            return false;
-        }
-
-        if ($subscription->expired_at === null) {
-            return false;
-        }
-
-        $expiresAt = $subscription->expired_at->copy()->startOfDay();
-        $today = Carbon::today();
-
-        if ($expiresAt->lt($today)) {
-            return false;
-        }
-
-        return $today->diffInDays($expiresAt) <= 3;
     }
 }
 

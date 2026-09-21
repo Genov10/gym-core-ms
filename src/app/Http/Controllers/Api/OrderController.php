@@ -44,6 +44,7 @@ class OrderController extends Controller
             if (! $result['success']) {
                 $code = match ($result['message']) {
                     'Service not found' => 3,
+                    'Customer already has an unstarted subscription for this service' => 2,
                     'Customer already has this service' => 2,
                     default => 1,
                 };

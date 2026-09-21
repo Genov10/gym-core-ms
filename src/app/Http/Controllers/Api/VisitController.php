@@ -11,6 +11,7 @@ use App\Models\CustomerVisit;
 use App\Models\GymService;
 use App\Models\LockerRoom;
 use App\Models\LockerRoomItem;
+use App\Services\CustomerPurchaseService;
 use App\Services\PassExpiryWebhookNotifier;
 use App\Services\SubscriptionFreezeService;
 use Illuminate\Http\Request;
@@ -112,12 +113,18 @@ class VisitController extends Controller
             }
 
             $result = DB::transaction(function () use ($customer, $gymService) {
-                $customerGymService = CustomerGymService::query()
-                    ->where('customer_id', (int) $customer->id)
-                    ->where('gym_service_id', (int) $gymService->id)
-                    ->where('is_active', 1)
-                    ->lockForUpdate()
-                    ->first();
+                $purchaseService = app(CustomerPurchaseService::class);
+
+                // Кейс 2: есть начатый незакрытый — берём его.
+                // Кейс 1: иначе берём неначатый и стартуем период.
+                $customerGymService = $purchaseService->resolveSubscriptionForVisit($customer, $gymService);
+
+                if ($customerGymService) {
+                    $customerGymService = CustomerGymService::query()
+                        ->where('id', (int) $customerGymService->id)
+                        ->lockForUpdate()
+                        ->first();
+                }
 
                 if (! $customerGymService) {
                     return [
@@ -182,19 +189,6 @@ class VisitController extends Controller
                         ];
                     }
                 }
-
-                // $locker = $this->allocateFreeLocker($customer);
-
-                // if ($locker === null) {
-                //     return [
-                //         'status' => 409,
-                //         'payload' => [
-                //             'success' => false,
-                //             'message' => 'No free lockers available',
-                //             'code' => 14,
-                //         ],
-                //     ];
-                // }
 
                 $customerGymService->finished_visits_amount = (int) $customerGymService->finished_visits_amount + 1;
                 $customerGymService->save();
