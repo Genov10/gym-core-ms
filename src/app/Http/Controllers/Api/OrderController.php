@@ -62,6 +62,9 @@ class OrderController extends Controller
                 'code' => 0,
                 'orderReference' => $result['orderReference'],
                 'url' => $result['url'],
+                'name' => $result['name'],
+                'sale_from' => $result['sale_from'],
+                'price' => $result['price'],
             ], 200);
         } catch (\Throwable $e) {
             return response()->json([

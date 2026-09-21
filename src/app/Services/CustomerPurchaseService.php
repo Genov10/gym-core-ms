@@ -187,7 +187,14 @@ class CustomerPurchaseService
     }
 
     /**
-     * @return array{success: true, url: string, orderReference: string}|array{success: false, message: string, httpStatus: int}
+     * @return array{
+     *   success: true,
+     *   url: string,
+     *   orderReference: string,
+     *   name: string,
+     *   sale_from: int,
+     *   price: int
+     * }|array{success: false, message: string, httpStatus: int}
      */
     public function createPaymentLink(Customer $customer, int $serviceId, bool $skipBanCheck = false): array
     {
@@ -228,6 +235,7 @@ class CustomerPurchaseService
             'purchase_date' => Carbon::now(),
         ]);
 
+        $saleFrom = (int) $service->price;
         $amount = (float) $this->calculatePrice($service, $customer);
         $currency = (string) config('services.wayforpay.currency', 'UAH');
 
@@ -277,6 +285,9 @@ class CustomerPurchaseService
                         'success' => true,
                         'url' => $json['url'],
                         'orderReference' => $orderReference,
+                        'name' => (string) $service->name,
+                        'sale_from' => $saleFrom,
+                        'price' => (int) $amount,
                     ];
                 }
             }
