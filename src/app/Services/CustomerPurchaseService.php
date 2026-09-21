@@ -87,10 +87,15 @@ class CustomerPurchaseService
     }
 
     /**
-     * Скидка на следующий такой же абонемент: sale_for_next > 0 и до конца текущего ≤ 3 дней.
+     * Скидка на следующий такой же абонемент: только не льготные (не студент/милитари),
+     * sale_for_next > 0 и до конца текущего ≤ 3 дней.
      */
     public function isEligibleForNextPurchaseDiscount(Customer $customer, GymService $service): bool
     {
+        if ($customer->is_military_member || $customer->is_student) {
+            return false;
+        }
+
         if ((int) $service->sale_for_next <= 0) {
             return false;
         }
