@@ -24,6 +24,7 @@ Route::get('/finish-visits-periodically', [VisitController::class, 'finishVisits
 
 Route::get('/check-passes-for-one-day', [PassExpiryController::class, 'checkPassesForOneDay']);
 Route::get('/check-passes-for-three-days', [PassExpiryController::class, 'checkPassesForThreeDays']);
+Route::get('/check-passes-for-five-days', [PassExpiryController::class, 'checkPassesForFiveDays']);
 Route::get('/gym-freeze-preview', [SubscriptionFreezeController::class, 'preview']);
 Route::get('/gym-freeze-confirm', [SubscriptionFreezeController::class, 'confirm']);
 Route::get('/check-freezes-expiry', [SubscriptionFreezeController::class, 'finishExpired']);
