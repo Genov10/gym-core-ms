@@ -90,7 +90,8 @@ class CustomerPurchaseService
 
     /**
      * Скидка на следующий такой же абонемент: только не льготные (не студент/милитари),
-     * sale_for_next > 0 и до конца текущего ≤ 3 дней.
+     * sale_for_next > 0 и до конца текущего осталось от 3 до 5 дней включительно
+     * (больше 2 и меньше или равно 5).
      */
     public function isEligibleForNextPurchaseDiscount(Customer $customer, GymService $service): bool
     {
@@ -118,7 +119,10 @@ class CustomerPurchaseService
             return false;
         }
 
-        return $today->diffInDays($expiresAt) <= 3;
+        $daysLeft = $today->diffInDays($expiresAt);
+
+        // Окно скидки: 2 < daysLeft <= 5 ⇒ daysLeft ∈ {3, 4, 5}
+        return $daysLeft > 2 && $daysLeft <= 5;
     }
 
     /**
